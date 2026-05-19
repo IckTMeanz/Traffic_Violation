@@ -9,7 +9,7 @@ public class UserController {
     
     @GetMapping("/admin")
     public String admin() {
-        return "admin";
+        return "admin2";
     }
 
     @GetMapping("/authority")

@@ -547,9 +547,42 @@
             const isActive = user.is_active;
             const isLoading = pendingToggle.has(user.id);
 
-            const roleBadge = user.role === 'ROLE_AUTHORITY'
-                ? `<span class="badge badge-authority px-2 py-1 rounded" style="font-size:0.75rem;font-weight:500">Cán bộ kiểm duyệt</span>`
-                : `<span class="badge badge-user px-2 py-1 rounded" style="font-size:0.75rem;font-weight:500">Người dân</span>`;
+            let roleBadge = '';
+
+            if (user.role === 'ROLE_ADMIN') {
+                roleBadge = `
+        <span
+            class="px-2 py-1 rounded"
+            style="
+                font-size:0.75rem;
+                font-weight:500;
+                background-color:#FEF2F2;
+                color:#DC2626;
+                border:1px solid #FECACA;
+            "
+        >
+            Quản trị viên
+        </span>
+    `;
+            } else if (user.role === 'ROLE_AUTHORITY') {
+                roleBadge = `
+        <span
+            class="badge badge-authority px-2 py-1 rounded"
+            style="font-size:0.75rem;font-weight:500"
+        >
+            Cán bộ kiểm duyệt
+        </span>
+    `;
+            } else {
+                roleBadge = `
+        <span
+            class="badge badge-user px-2 py-1 rounded"
+            style="font-size:0.75rem;font-weight:500"
+        >
+            Người dân
+        </span>
+    `;
+            }
 
             const statusIndicator = isActive
                 ? `<span class="status-indicator status-active">Đang hoạt động</span>`
@@ -560,7 +593,19 @@
                 : isActive
                     ? `<i class="fa-solid fa-toggle-on text-success"></i>`
                     : `<i class="fa-solid fa-toggle-off text-secondary"></i>`;
-
+            const actionButton = user.role === 'ROLE_ADMIN'
+                ? `<span class="text-danger small fw-semibold">Không thể khóa</span>`
+                : `
+        <button
+            class="toggle-btn"
+            id="toggle-btn-${user.id}"
+            onclick="toggleUserStatus(${user.id})"
+            title="${isActive ? 'Khóa tài khoản' : 'Mở khóa tài khoản'}"
+            ${isLoading ? 'disabled' : ''}
+        >
+            ${toggleIcon}
+        </button>
+    `;
             const row = document.createElement('tr');
             row.className = 'border-bottom';
             row.id = `user-row-${user.id}`;
@@ -571,16 +616,8 @@
                     <td class="px-4 py-3">${roleBadge}</td>
                     <td class="px-4 py-3">${statusIndicator}</td>
                     <td class="px-4 py-3 text-end">
-                        <button
-                            class="toggle-btn"
-                            id="toggle-btn-${user.id}"
-                            onclick="toggleUserStatus(${user.id})"
-                            title="${isActive ? 'Khóa tài khoản' : 'Mở khóa tài khoản'}"
-                            ${isLoading ? 'disabled' : ''}
-                        >
-                            ${toggleIcon}
-                        </button>
-                    </td>
+    ${actionButton}
+</td>
                 `;
             tbody.appendChild(row);
         });
