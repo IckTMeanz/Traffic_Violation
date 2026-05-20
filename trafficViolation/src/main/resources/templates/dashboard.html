@@ -1,11 +1,582 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Traffic Violation System - Login</title>
+    <title>Traffic Violation Detect — User Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+    <style>
+        /* ============================================================
+           CUSTOM DESIGN SYSTEM (Tuân thủ UI_pattern.md)
+           ============================================================ */
+        :root {
+            --primary: #2563EB;
+            --primary-hover: #1D4ED8;
+            --primary-light: #DBEAFE;
+            --bg-slate: #F8FAFC;
+            --text-dark: #0F172A;
+            --text-muted: #64748B;
+            --border-color: #E2E8F0;
+            --success: #16A34A;
+            --danger: #DC2626;
+            --warning: #F59E0B;
+            --info: #0EA5E9;
+            --sidebar-width: 280px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-slate);
+            color: var(--text-dark);
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        .h-44 { height: 44px !important; }
+        .rounded-xl-custom { border-radius: 12px !important; }
+        .rounded-2xl-custom { border-radius: 16px !important; }
+
+        /* ============================================================
+           LEFT SIDEBAR LAYOUT
+           ============================================================ */
+        .admin-sidebar-left {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #ffffff;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 24px 16px;
+            z-index: 100;
+        }
+
+        .main-dashboard-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            padding: 40px;
+            width: calc(100% - var(--sidebar-width));
+        }
+
+        .brand-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px 24px 12px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .system-logo {
+            background-color: var(--primary);
+            color: white;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-menu-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-menu-btn {
+            width: 100%;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.925rem;
+            padding: 12px 16px;
+            border-radius: 12px;
+            transition: all 0.2s ease-in-out;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-align: left;
+        }
+
+        .sidebar-menu-btn:hover {
+            background-color: var(--bg-slate);
+            color: var(--text-dark);
+        }
+
+        .sidebar-menu-btn.active {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .signout-wrapper {
+            border-top: 1px solid var(--border-color);
+            padding-top: 16px;
+        }
+
+        .btn-signout {
+            width: 100%;
+            border: none;
+            background: transparent;
+            color: #EF4444;
+            font-weight: 500;
+            font-size: 0.925rem;
+            padding: 12px 16px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s ease-in-out;
+        }
+        .btn-signout:hover {
+            background-color: #FEF2F2;
+            color: #DC2626;
+        }
+
+        /* ============================================================
+           UPLOAD AREA & FORM STYLES
+           ============================================================ */
+        .upload-type-card {
+            border: 1px solid var(--border-color);
+            background-color: #ffffff;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .upload-type-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.05);
+            transform: translateY(-2px);
+        }
+        .upload-type-card.selected {
+            border-color: var(--primary);
+            background-color: #F8FAFC;
+        }
+
+        .drag-drop-zone {
+            border: 2px dashed #CBD5E1;
+            background-color: #ffffff;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .drag-drop-zone:hover {
+            border-color: var(--primary);
+            background-color: var(--bg-slate);
+        }
+
+        .btn-primary-custom {
+            background-color: var(--primary);
+            border: none;
+            color: white;
+            font-weight: 500;
+        }
+        .btn-primary-custom:hover { background-color: var(--primary-hover); }
+
+        .btn-secondary-custom {
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .btn-secondary-custom:hover { background-color: var(--bg-slate); color: var(--text-dark); }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-light);
+        }
+
+        /* Status Tasks badges (Early Stopping & Asynchronous processing indicators) */
+        .status-task {
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .task-queued { background-color: #F1F5F9; color: #475569; }
+        .task-queued::before { content: ''; width: 6px; height: 6px; background-color: #64748B; border-radius: 50%; }
+
+        .task-processing { background-color: #E0F2FE; color: #0369A1; }
+        .task-processing::before { content: ''; width: 6px; height: 6px; background-color: var(--info); border-radius: 50%; }
+
+        .task-done { background-color: #ECFDF5; color: #047857; }
+        .task-done::before { content: ''; width: 6px; height: 6px; background-color: var(--success); border-radius: 50%; }
+
+        .task-failed { background-color: #FEF2F2; color: #B91C1C; }
+        .task-failed::before { content: ''; width: 6px; height: 6px; background-color: var(--danger); border-radius: 50%; }
+
+        .fade-in-section {
+            animation: fadeIn 0.3s ease-in-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 1024px) {
+            .admin-sidebar-left { width: 70px; padding: 24px 8px; }
+            .admin-sidebar-left .brand-title, .admin-sidebar-left .menu-text { display: none; }
+            .brand-wrapper { padding: 8px 0 24px 0; justify-content: center; }
+            .sidebar-menu-btn, .btn-signout { justify-content: center; padding: 12px; }
+            .main-dashboard-content { margin-left: 70px; width: calc(100% - 70px); padding: 24px; }
+        }
+    </style>
 </head>
 <body>
-    <h1>User Dashboard</h1>
-    <p>Welcome, User! Here you can view your traffic violation records and manage your account.</p>
+
+<aside class="admin-sidebar-left">
+    <div>
+        <div class="brand-wrapper">
+            <div class="system-logo rounded-xl-custom">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <span class="brand-title fw-bold fs-5 tracking-tight text-dark">Traffic Detect</span>
+        </div>
+
+        <nav>
+            <ul class="nav-menu-list">
+                <li>
+                    <button id="tab-create-btn" class="sidebar-menu-btn active" onclick="switchTab('create')">
+                        <i class="fa-solid fa-cloud-arrow-up fa-fw"></i>
+                        <span class="menu-text">Create report</span>
+                    </button>
+                </li>
+                <li>
+                    <button id="tab-history-btn" class="sidebar-menu-btn" onclick="switchTab('history')">
+                        <i class="fa-solid fa-clock-rotate-left fa-fw"></i>
+                        <span class="menu-text">See history</span>
+                    </button>
+                </li>
+                <li>
+                    <button id="tab-appeal-btn" class="sidebar-menu-btn" onclick="switchTab('appeal')">
+                        <i class="fa-solid fa-circle-exclamation fa-fw"></i>
+                        <span class="menu-text">Create appeal</span>
+                    </button>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <div class="signout-wrapper">
+
+        <form th:action="@{/logout}" method="post">
+
+            <button type="submit" class="btn-signout">
+                <i class="fa-solid fa-right-from-bracket fa-fw"></i>
+                <span class="menu-text">Sign out</span>
+            </button>
+
+        </form>
+
+    </div>
+</aside>
+
+<main class="main-dashboard-content">
+
+    <header class="d-flex align-items-center justify-content-between bg-white rounded-2xl-custom border p-3 mb-4 shadow-sm">
+        <div class="d-flex align-items-center gap-3">
+            <h1 class="h5 mb-0 fw-bold text-dark">
+                Traffic violation detect
+            </h1>
+        </div>
+        <div class="text-sm text-secondary">
+            <i class="fa-regular fa-circle-user me-1"></i> Công dân công cộng
+        </div>
+    </header>
+
+    <div id="section-create" class="fade-in-section">
+        <div class="mb-4">
+            <h2 class="h3 fw-bold mb-1">Tạo báo cáo vi phạm mới</h2>
+            <p class="text-secondary small mb-0">Tải lên tệp tin hình ảnh hoặc video để hệ thống mạng nơ-ron AI tự động phân tích hành vi lỗi đa nhãn.</p>
+        </div>
+
+        <div class="card rounded-2xl-custom border-0 shadow-sm p-4 p-sm-5 bg-white">
+            <form id="report-upload-form" onsubmit="handleUploadReport(event)">
+
+                <div class="mb-4">
+                    <label class="form-label font-medium small text-dark mb-1">Tiêu đề ngắn mô tả</label>
+                    <input type="text" id="upload-title" required class="form-control h-44 rounded-xl-custom text-sm" placeholder="Ví dụ: Vi phạm ngã tư nguyễn trãi">
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label font-medium small text-dark mb-2">Bước 1: Chọn định dạng tệp tin tải lên</label>
+                    <div class="row g-3">
+                        <div class="col-12 col-sm-6">
+                            <div id="card-type-image" class="upload-type-card p-3 rounded-xl-custom text-center selected" onclick="selectUploadType('IMAGE')">
+                                <i class="fa-regular fa-image text-primary fa-2xl mb-3 d-block mt-2"></i>
+                                <span class="fw-semibold text-sm d-block">Tải lên Hình ảnh</span>
+                                <span class="text-muted d-block mt-1" style="font-size: 0.75rem;">Hỗ trợ format: JPG, JPEG, PNG</span>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <div id="card-type-video" class="upload-type-card p-3 rounded-xl-custom text-center" onclick="selectUploadType('VIDEO')">
+                                <i class="fa-regular fa-file-video text-primary fa-2xl mb-3 d-block mt-2"></i>
+                                <span class="fw-semibold text-sm d-block">Tải lên Video</span>
+                                <span class="text-muted d-block mt-1" style="font-size: 0.75rem;">Hỗ trợ format: MP4, MOV</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label font-medium small text-dark mb-2">Bước 2: Chọn tệp đính kèm dữ liệu</label>
+                    <div class="drag-drop-zone rounded-2xl-custom p-5 text-center" onclick="triggerFileInput()">
+                        <i class="fa-solid fa-cloud-arrow-up text-secondary fa-2xl mb-3"></i>
+                        <p class="text-dark fw-medium text-sm mb-1" id="upload-zone-text">Kéo thả tệp tin hình ảnh vào đây hoặc nhấp để chọn file</p>
+                        <p class="text-secondary mb-0" style="font-size: 0.75rem;">Dung lượng tệp tối đa: 500 MB</p>
+                        <input type="file" id="main-file-input" required class="d-none" onchange="handleFileSelect(this)">
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end pt-2">
+                    <button type="submit" class="btn btn-primary-custom h-44 rounded-xl-custom px-5">Gửi báo cáo lên hệ thống</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <div id="section-history" class="fade-in-section d-none">
+        <div class="mb-4">
+            <h2 class="h3 fw-bold mb-1">Lịch sử gửi báo cáo</h2>
+            <p class="text-secondary small mb-0">Theo dõi tiến độ phân tích bất đồng bộ của AI service đối với các tệp tin bạn đã upload.</p>
+        </div>
+
+        <div class="card rounded-2xl-custom border-0 shadow-sm overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 text-sm">
+                    <thead class="table-light border-bottom text-uppercase tracking-wider text-secondary" style="font-size: 0.75rem; font-weight: 600;">
+                    <tr>
+                        <th class="px-4 py-3">Mã Report</th>
+                        <th class="px-4 py-3">Tiêu đề báo cáo</th>
+                        <th class="px-4 py-3">Loại tệp</th>
+                        <th class="px-4 py-3">Thời gian tạo</th>
+                        <th class="px-4 py-3">Tiến trình AI</th>
+                        <th class="px-4 py-3 text-end">Hành động</th>
+                    </tr>
+                    </thead>
+                    <tbody id="history-table-body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="section-appeal" class="fade-in-section d-none">
+        <div class="mb-4">
+            <h2 class="h3 fw-bold mb-1">Gửi đơn khiếu nại biên bản</h2>
+            <p class="text-secondary small mb-0">Nếu nhận thấy kết quả phê duyệt của Cán bộ hoặc AI chưa chính xác, bạn có thể tạo 1 đơn khiếu nại duy nhất tại đây.</p>
+        </div>
+
+        <div class="row">
+            <div class="col-12 col-xl-7">
+                <div class="card rounded-2xl-custom border-0 shadow-sm p-4 p-sm-5 bg-white">
+                    <form id="appeal-form" onsubmit="handleUploadAppeal(event)">
+
+                        <div class="mb-3">
+                            <label class="form-label font-medium small text-dark mb-1">Chọn mã biên bản (Report ID) cần khiếu nại</label>
+                            <select id="appeal-report-id" required class="form-select h-44 rounded-xl-custom text-sm">
+                                <option value="" disabled selected hidden>Chọn từ danh sách biên bản bị Reject của bạn</option>
+                                <option value="104">#RP-104 (Tệp: img_khu_duy_tien.png) - Đã hủy bỏ bởi cán bộ</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label font-medium small text-dark mb-1">Lời nhắn giải trình lý do</label>
+                            <textarea id="appeal-message" required class="form-control rounded-xl-custom text-sm p-3" rows="5" placeholder="Hãy viết chi tiết lập luận giải trình lý do vi phạm của bạn để cán bộ xem xét lại..."></textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary-custom h-44 rounded-xl-custom px-5">Nộp đơn khiếu nại</button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-12 col-xl-5 mt-4 mt-xl-0">
+                <div class="card rounded-2xl-custom border-0 shadow-sm p-4 bg-white">
+                    <h5 class="fw-bold text-dark text-sm mb-2"><i class="fa-solid fa-circle-info text-primary me-2"></i>Quy chế khiếu nại biên bản</h5>
+                    <p class="text-secondary small mb-2">Theo thiết kế hệ thống ràng buộc Một-Một (1:1), mỗi báo cáo vi phạm chỉ được phép gửi duy nhất một đơn khiếu nại.</p>
+                    <p class="text-secondary small mb-0">Khi đơn khiếu nại được gửi đi, Cán bộ chức năng tối cao sẽ xem xét lại thủ công khung frame đầu tiên bóc tách lỗi để đưa ra quyết định đảo ngược án phạt hoặc đóng hồ sơ vĩnh viễn.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<script>
+    // Quản lý State ảo của người dùng cho luồng tệp tin bất đồng bộ
+    let currentUploadType = 'IMAGE';
+    let userHistoryData = [
+        { id: 101, title: 'Vi phạm đè vạch Phố Huế', type: 'VIDEO', date: '2026-05-18 14:20', status: 'DONE' },
+        { id: 102, title: 'Báo cáo lỗi Ngã Tư Sở', type: 'IMAGE', date: '2026-05-19 09:12', status: 'PROCESSING' },
+        { id: 104, title: 'Nghi vấn không đội mũ Khuất Duy Tiến', type: 'IMAGE', date: '2026-05-15 10:05', status: 'DONE' }
+    ];
+
+    // 1. Chuyển đổi tab động menu trái
+    function switchTab(tabName) {
+        const sections = {
+            create: document.getElementById('section-create'),
+            history: document.getElementById('section-history'),
+            appeal: document.getElementById('section-appeal')
+        };
+        const buttons = {
+            create: document.getElementById('tab-create-btn'),
+            history: document.getElementById('tab-history-btn'),
+            appeal: document.getElementById('tab-appeal-btn')
+        };
+
+        // Ẩn tất cả section và xóa active của button
+        Object.keys(sections).forEach(key => {
+            sections[key].classList.add('d-none');
+            buttons[key].classList.remove('active');
+        });
+
+        // Kích hoạt tab được chọn
+        sections[tabName].classList.remove('d-none');
+        buttons[tabName].classList.add('active');
+
+        if (tabName === 'history') renderHistoryTable();
+    }
+
+    // 2. Thay đổi trạng thái lựa chọn loại hình Upload (IMAGE hoặc VIDEO)
+    function selectUploadType(type) {
+        currentUploadType = type;
+        const imgCard = document.getElementById('card-type-image');
+        const videoCard = document.getElementById('card-type-video');
+        const zoneText = document.getElementById('upload-zone-text');
+        const fileInput = document.getElementById('main-file-input');
+
+        fileInput.value = ''; // Reset file đã chọn trước đó
+
+        if (type === 'IMAGE') {
+            imgCard.classList.add('selected');
+            videoCard.classList.remove('selected');
+            zoneText.innerText = 'Kéo thả tệp tin hình ảnh vào đây hoặc nhấp để chọn file';
+            fileInput.setAttribute('accept', '.jpg, .jpeg, .png');
+        } else {
+            imgCard.classList.remove('selected');
+            videoCard.classList.add('selected');
+            zoneText.innerText = 'Kéo thả tệp tin video vào đây hoặc nhấp để chọn file';
+            fileInput.setAttribute('accept', '.mp4, .mov');
+        }
+    }
+
+    // 3. Trigger nhấp chuột vào vùng ẩn Input File
+    function triggerFileInput() {
+        document.getElementById('main-file-input').click();
+    }
+
+    // Hiển thị tên file khi người dùng chọn xong tệp tin
+    function handleFileSelect(input) {
+        const zoneText = document.getElementById('upload-zone-text');
+        if (input.files && input.files[0]) {
+            zoneText.innerHTML = `<span class="text-primary font-semibold"><i class="fa-regular fa-file me-2"></i>Đã chọn: ${input.files[0].name}</span>`;
+        }
+    }
+
+    // 4. Submit tạo mới một bản ghi Report (Chuyển trạng thái ban đầu thành QUEUED)
+    function handleUploadReport(event) {
+        event.preventDefault();
+        const title = document.getElementById('upload-title').value;
+        const fileInput = document.getElementById('main-file-input');
+
+        if (!fileInput.files || fileInput.files.length === 0) {
+            alert("Vui lòng tải lên tệp tin đính kèm trước khi gửi.");
+            return;
+        }
+
+        // Mock tạo tác vụ bất đồng bộ xếp hàng xử lý ngầm (QUEUED)
+        const newReport = {
+            id: Math.floor(100 + Math.random() * 900),
+            title: title,
+            type: currentUploadType,
+            date: '2026-05-19 10:22', // Mock thời gian thực tế hiện tại
+            status: 'QUEUED'
+        };
+
+        userHistoryData.unshift(newReport); // Đẩy lên đầu danh sách lịch sử
+        alert(`Tải tệp lên thành công! Báo cáo mã số #RP-${newReport.id} đã được đưa vào hàng đợi xử lý ngầm (Asynchronous Queue).`);
+
+        // Reset form và chuyển về tab lịch sử xem tiến độ
+        document.getElementById('report-upload-form').reset();
+        selectUploadType('IMAGE');
+        switchTab('history');
+    }
+
+    // 5. Kết xuất bảng lịch sử tác vụ phân tích AI
+    function renderHistoryTable() {
+        const tbody = document.getElementById('history-table-body');
+        tbody.innerHTML = '';
+
+        userHistoryData.forEach(task => {
+            let statusBadge = '';
+            let actionBtn = '';
+
+            // Gán badge tiến độ tương ứng
+            if (task.status === 'QUEUED') {
+                statusBadge = `<span class="status-task task-queued">Đang xếp hàng</span>`;
+                actionBtn = `<button class="btn btn-sm btn-light rounded-xl-custom text-muted" disabled>Chờ xử lý</button>`;
+            } else if (task.status === 'PROCESSING') {
+                statusBadge = `<span class="status-task task-processing">AI đang phân tích</span>`;
+                actionBtn = `<button class="btn btn-sm btn-light rounded-xl-custom text-muted" disabled><i class="fa-solid fa-spinner fa-spin me-1"></i>Loading</button>`;
+            } else if (task.status === 'DONE') {
+                statusBadge = `<span class="status-task task-done">Hoàn thành</span>`;
+                actionBtn = `<button class="btn btn-secondary-custom btn-sm rounded-xl-custom px-3" onclick="viewTaskResult(${task.id})"><i class="fa-regular fa-eye me-1"></i>Xem kết quả</button>`;
+            } else {
+                statusBadge = `<span class="status-task task-failed">Thất bại</span>`;
+                actionBtn = `<button class="btn btn-sm btn-light rounded-xl-custom text-danger" disabled>Lỗi tệp</button>`;
+            }
+
+            const fileIcon = task.type === 'VIDEO' ? '<i class="fa-regular fa-file-video text-primary me-2"></i>' : '<i class="fa-regular fa-image text-info me-2"></i>';
+
+            const row = document.createElement('tr');
+            row.className = 'border-bottom';
+            row.innerHTML = `
+                    <td class="px-4 py-3 fw-bold text-dark">#RP-${task.id}</td>
+                    <td class="px-4 py-3 fw-medium text-dark">${task.title}</td>
+                    <td class="px-4 py-3 text-secondary">${fileIcon}${task.type}</td>
+                    <td class="px-4 py-3 text-secondary" style="font-size: 0.825rem;">${task.date}</td>
+                    <td class="px-4 py-3">${statusBadge}</td>
+                    <td class="px-4 py-3 text-end">${actionBtn}</td>
+                `;
+            tbody.appendChild(row);
+        });
+    }
+
+    // 6. Xử lý nút xem chi tiết kết quả khi trạng thái là DONE
+    function viewTaskResult(reportId) {
+        alert(`Hệ thống đang tải trình phát video/ảnh kết quả cho biên bản #RP-${reportId}. Đang trích xuất dữ liệu đa nhãn...`);
+    }
+
+    // 7. Tạo mới một đơn khiếu nại (Ràng buộc 1:1)
+    function handleUploadAppeal(event) {
+        event.preventDefault();
+        const reportId = document.getElementById('appeal-report-id').value;
+        const message = document.getElementById('appeal-message').value;
+
+        alert(`Nộp đơn khiếu nại thành công cho biên bản số #RP-${reportId}. Hồ sơ đã chuyển sang trạng thái chờ Cơ quan thẩm quyền phê duyệt đảo ngược.`);
+        document.getElementById('appeal-form').reset();
+        switchTab('create');
+    }
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+</html>

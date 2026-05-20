@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traffic Violation System - Register</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            overflow: hidden;
+        }
+
+        .background-circle {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.5;
+        }
+
+        .circle1 {
+            width: 300px;
+            height: 300px;
+            background: #4facfe;
+            top: -80px;
+            left: -80px;
+        }
+
+        .circle2 {
+            width: 250px;
+            height: 250px;
+            background: #43e97b;
+            bottom: -60px;
+            right: -60px;
+        }
+
+        .register-container {
+            width: 420px;
+            padding: 40px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            color: white;
+            position: relative;
+            z-index: 10;
+        }
+
+        .system-title {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .sub-title {
+            text-align: center;
+            margin-bottom: 25px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+        }
+
+        /* Khối hiển thị thông báo lỗi */
+        .alert-box {
+            display: none;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            line-height: 1.4;
+            text-align: left;
+        }
+        .alert-error {
+            background: rgba(220, 38, 38, 0.25);
+            border: 1px solid rgba(220, 38, 38, 0.4);
+            color: #fca5a5;
+        }
+        .alert-success {
+            background: rgba(22, 163, 74, 0.25);
+            border: 1px solid rgba(22, 163, 74, 0.4);
+            color: #86efac;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .input-group input:focus {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.02);
+        }
+
+        .register-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            background: white;
+            color: #1e3c72;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .register-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        .register-btn:disabled {
+            background: #cccccc;
+            color: #666666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .login-link {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .login-link a {
+            color: white;
+            font-weight: bold;
+            text-decoration: none;
+            margin-left: 4px;
+            transition: 0.3s;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+            opacity: 0.8;
+        }
+
+        .footer-text {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        @media(max-width:480px){
+            .register-container {
+                width: 90%;
+                padding: 30px;
+            }
+            .system-title {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="background-circle circle1"></div>
+<div class="background-circle circle2"></div>
+
+<div class="register-container">
+
+    <div class="system-title">
+        Traffic Violation System
+    </div>
+
+    <div class="sub-title">
+        Create your account
+    </div>
+
+    <!-- Vùng thông báo lỗi/thành công -->
+    <div id="alert-box" class="alert-box"></div>
+
+    <!-- ID form được đổi để kiểm soát bằng JavaScript -->
+    <form id="registerForm">
+
+        <div class="input-group">
+            <label>Username</label>
+            <input
+                    type="text"
+                    id="username"
+                    placeholder="Nhập username"
+                    required>
+        </div>
+
+        <div class="input-group">
+            <label>Full Name</label>
+            <input
+                    type="text"
+                    id="full_name"
+                    placeholder="Nhập họ và tên"
+                    required>
+        </div>
+
+        <div class="input-group">
+            <label>Phone Number</label>
+            <input
+                    type="text"
+                    id="phone_number"
+                    placeholder="Nhập số điện thoại"
+                    required>
+        </div>
+
+        <div class="input-group">
+            <label>Password</label>
+            <input type="password" id="password" required minlength="8"
+                   pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+                   class="form-control h-44 rounded-xl-custom text-sm px-3" placeholder="Nhập mật khẩu">
+        </div>
+
+        <button type="submit" id="submitBtn" class="register-btn">
+            Đăng ký
+        </button>
+
+    </form>
+
+    <div class="login-link">
+        Đã có tài khoản?
+        <a th:href="@{/login}">
+            Đăng nhập
+        </a>
+    </div>
+
+    <div class="footer-text">
+        © 2026 Traffic Violation Detection System
+    </div>
+
+</div>
+
+<script th:inline="javascript">
+    document.getElementById('registerForm').addEventListener('submit', async function(event) {
+        event.preventDefault(); // Ngăn hành vi tải lại trang mặc định
+
+        const alertBox = document.getElementById('alert-box');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // Ẩn thông báo cũ
+        alertBox.style.display = 'none';
+        alertBox.className = 'alert-box';
+
+        // Lấy dữ liệu từ các ô nhập liệu
+        const username = document.getElementById('username').value.trim();
+        const full_name = document.getElementById('full_name').value.trim();
+        const phone_number = document.getElementById('phone_number').value.trim();
+        const password = document.getElementById('password').value;
+
+        // Đóng gói payload đúng định dạng snake_case của CreateUserRequest DTO
+        const payload = {
+            username,
+            full_name,
+            phone_number,
+            password
+        };
+
+        try {
+            // Trạng thái chờ xử lý mạng
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Đang xử lý...';
+
+            // Gọi API tạo tài khoản người dùng
+            const response = await fetch('/admin/api/createUserAcc', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                alertBox.innerText = 'Đăng ký tài khoản thành công! Đang chuyển hướng...';
+                alertBox.classList.add('alert-success');
+                alertBox.style.display = 'block';
+
+                // Tự động chuyển hướng về trang login sau 1.5 giây
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 1500);
+            } else {
+                let errorMsg = 'Đăng ký thất bại. Vui lòng thử lại.';
+
+                try {
+                    const errorData = await response.json();
+                    // Trường hợp trả về thông báo lỗi chi tiết hoặc lỗi từ Validation @Valid
+                    if (errorData.message) {
+                        errorMsg = errorData.message;
+                    } else if (typeof errorData === 'object') {
+                        errorMsg = Object.values(errorData).join('<br>');
+                    }
+                } catch (e) {
+                    const textError = await response.text();
+                    if (textError) errorMsg = textError;
+                }
+
+                alertBox.innerHTML = errorMsg;
+                alertBox.classList.add('alert-error');
+                alertBox.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Đăng ký';
+            }
+        } catch (error) {
+            console.error('Lỗi khi gửi yêu cầu API:', error);
+            alertBox.innerText = 'Lỗi kết nối đến hệ thống máy chủ.';
+            alertBox.classList.add('alert-error');
+            alertBox.style.display = 'block';
+            submitBtn.disabled = false;
+            submitBtn.innerText = 'Đăng ký';
+        }
+    });
+</script>
+
+</body>
+</html>

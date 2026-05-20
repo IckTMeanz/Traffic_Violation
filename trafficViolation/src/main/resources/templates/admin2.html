@@ -357,10 +357,16 @@
     </div>
 
     <div class="signout-wrapper">
-        <button class="btn-signout" onclick="handleSignOut()">
-            <i class="fa-solid fa-right-from-bracket fa-fw"></i>
-            <span class="menu-text">Sign out</span>
-        </button>
+
+        <form th:action="@{/logout}" method="post">
+
+            <button type="submit" class="btn-signout">
+                <i class="fa-solid fa-right-from-bracket fa-fw"></i>
+                <span class="menu-text">Sign out</span>
+            </button>
+
+        </form>
+
     </div>
 </aside>
 
@@ -440,7 +446,9 @@
 
                         <div class="mb-4">
                             <label class="form-label font-medium small text-dark mb-1">Mật khẩu khởi tạo</label>
-                            <input type="password" id="reg-password" required class="form-control h-44 rounded-xl-custom text-sm px-3" placeholder="••••••••">
+                            <input type="password" id="reg-password" required minlength="8"
+                                   pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+                                   class="form-control h-44 rounded-xl-custom text-sm px-3" placeholder="••••••••">
                         </div>
 
                         <div class="d-flex gap-3 pt-2">
@@ -692,25 +700,85 @@
     }
 
     // ================================================================
-    // CREATE AUTHORITY FORM
+    // CREATE AUTHORITY FORM (Đã kết nối API thật)
     // ================================================================
-    function handleCreateAccount(event) {
+    async function handleCreateAccount(event) {
         event.preventDefault();
         const form = document.getElementById('create-auth-form');
+
+        // Kiểm tra tính hợp lệ cơ bản của HTML5 Validation
         if (!form.checkValidity()) {
             form.classList.add('was-validated');
             return;
         }
 
-        const fullName = document.getElementById('reg-name').value;
-        const username = document.getElementById('reg-username').value;
-        const phone = document.getElementById('reg-phone').value;
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+
+        // Thu thập dữ liệu từ các ô Input
+        const fullName = document.getElementById('reg-name').value.trim();
+        const username = document.getElementById('reg-username').value.trim();
+        const phone = document.getElementById('reg-phone').value.trim();
         const password = document.getElementById('reg-password').value;
 
-        // TODO: gọi API tạo tài khoản cơ quan (POST /admin/api/create hoặc tương tự)
-        // Hiện tại hiển thị thông báo tạm
-        showToast(`Tạo tài khoản thành công cho: ${fullName}`, 'success');
-        cancelAndResetForm();
+        // Khớp cấu trúc chính xác với Request DTO phía Backend (CreateAuthorityRequest)
+        const payload = {
+            username: username,
+            full_name: fullName,
+            phone_number: phone,
+            password: password
+        };
+
+        try {
+            // Khóa nút submit để tránh click trùng lặp khi đang đợi mạng
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-2"></i> Đang xử lý...`;
+
+            // Gọi API (Hãy điều chỉnh lại tiền tố URL /admin nếu cần, ví dụ: '/admin/createAuthAcc')
+            const res = await fetch('/admin/api/createAuthAcc', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            // Trường hợp API trả về thành công (200 OK)
+            if (res.ok) {
+                const resultData = await res.json();
+                showToast(`Cấp tài khoản cơ quan thành công cho: ${resultData.full_name}`, 'success');
+
+                // Reset form và tự động điều hướng quay về danh sách User
+                cancelAndResetForm();
+            }
+            // Trường hợp lỗi Validation (400 Bad Request) hoặc lỗi logic hệ thống
+            else {
+                let errorMessage = 'Tạo tài khoản thất bại.';
+                try {
+                    const errData = await res.json();
+                    // Nếu Backend trả về danh sách các lỗi Validation từ @Valid
+                    if (errData.message) {
+                        errorMessage = errData.message;
+                    } else if (typeof errData === 'object') {
+                        // Thường lỗi Validation trả về map các field: { password: "...", username: "..." }
+                        errorMessage = Object.values(errData).join(', ');
+                    }
+                } catch (e) {
+                    // Nếu response trả về dạng text thô
+                    const textErr = await res.text();
+                    if (textErr) errorMessage = textErr;
+                }
+
+                showToast(errorMessage, 'error');
+            }
+        } catch (err) {
+            console.error('Lỗi kết nối API createAuthAcc:', err);
+            showToast('Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại.', 'error');
+        } finally {
+            // Mở khóa lại nút bấm
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+        }
     }
 
     function cancelAndResetForm() {
@@ -720,14 +788,7 @@
         switchTab('users');
     }
 
-    // ================================================================
-    // SIGN OUT
-    // ================================================================
-    function handleSignOut() {
-        if (confirm('Bạn có chắc chắn muốn đăng xuất khỏi hệ thống quản trị?')) {
-            window.location.href = '/login';
-        }
-    }
+
 
     // ================================================================
     // TOAST NOTIFICATION

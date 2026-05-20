@@ -181,6 +181,69 @@
             }
 
         }
+        .register-link{
+            margin-top:18px;
+            text-align:center;
+            font-size:14px;
+            color:rgba(255,255,255,0.8);
+        }
+
+        .register-link a{
+            color:white;
+            font-weight:bold;
+            text-decoration:none;
+            margin-left:4px;
+            transition:0.3s;
+        }
+
+        .register-link a:hover{
+            text-decoration:underline;
+            opacity:0.8;
+        }
+
+        .logout-toast{
+            position:fixed;
+            top:30px;
+            right:30px;
+
+            background:rgba(0,255,100,0.15);
+            border:1px solid rgba(0,255,100,0.4);
+
+            color:white;
+
+            padding:14px 22px;
+            border-radius:14px;
+
+            backdrop-filter:blur(12px);
+
+            box-shadow:0 8px 20px rgba(0,0,0,0.2);
+
+            z-index:9999;
+
+            animation:
+                    slideIn 0.4s ease,
+                    fadeOut 0.5s ease 2.5s forwards;
+        }
+
+        @keyframes slideIn{
+            from{
+                opacity:0;
+                transform:translateX(30px);
+            }
+
+            to{
+                opacity:1;
+                transform:translateX(0);
+            }
+        }
+
+        @keyframes fadeOut{
+            to{
+                opacity:0;
+                transform:translateY(-10px);
+                visibility:hidden;
+            }
+        }
 
     </style>
 </head>
@@ -205,10 +268,6 @@
         Sai tên đăng nhập hoặc mật khẩu
     </div>
 
-    <!-- Logout Success -->
-    <div th:if="${param.logout}" class="success-message">
-        Đăng xuất thành công
-    </div>
 
     <form th:action="@{/toAuthenticate}" method="post">
 
@@ -236,6 +295,11 @@
             Đăng nhập
         </button>
 
+        <div class="register-link">
+            Nếu chưa có tài khoản?
+            <a th:href="@{/register}">Đăng ký</a>
+        </div>
+
     </form>
 
     <div class="footer-text">
@@ -245,4 +309,22 @@
 </div>
 
 </body>
+<!-- Logout Toast -->
+<div
+        th:if="${param.logout}"
+        id="logout-toast"
+        class="logout-toast">
+
+    Đăng xuất thành công
+
+</div>
+<script th:if="${param.logout}">
+    setTimeout(() => {
+        const toast = document.getElementById('logout-toast');
+
+        if(toast){
+            toast.remove();
+        }
+    }, 3000);
+</script>
 </html>

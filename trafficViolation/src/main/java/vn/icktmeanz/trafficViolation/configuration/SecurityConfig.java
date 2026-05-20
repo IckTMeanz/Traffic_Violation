@@ -124,7 +124,7 @@ public class SecurityConfig {
             } else if (isAuthority) {
                 response.sendRedirect("/authority");
             } else if (isUser) {
-                response.sendRedirect("/dashboard");
+                response.sendRedirect("/user");
             } else {
                 response.sendRedirect("/login?error");
         }
