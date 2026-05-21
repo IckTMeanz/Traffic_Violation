@@ -35,10 +35,5 @@ public class AdminApiController {
     public UserDTO createAuthorityAccount(@Valid @RequestBody CreateAuthorityRequest authorityRequest){
         return this.userService.createAuthorityAccount(authorityRequest);
     }
-
-    @PostMapping("/createUserAcc")
-    public UserDTO createUserAccount(@Valid @RequestBody CreateUserRequest userRequest){
-        return this.userService.createUser(userRequest);
-    }
 }
 

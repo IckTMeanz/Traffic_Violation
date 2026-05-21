@@ -33,6 +33,8 @@ public class SecurityConfig {
                         // public resources
                         .requestMatchers(
                                 "/login",
+                                "/register",
+                                "/user/api/createUserAcc",
                                 "/css/**",
                                 "/js/**",
                                 "/images/**"
