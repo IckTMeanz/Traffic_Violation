@@ -4,16 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Traffic Violation Detect — Authority Dashboard</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 
     <style>
-        /* ============================================================
-           CUSTOM DESIGN SYSTEM (Tuân thủ UI_pattern.md)
-           ============================================================ */
         :root {
             --primary: #2563EB;
             --primary-hover: #1D4ED8;
@@ -25,7 +24,6 @@
             --success: #16A34A;
             --danger: #DC2626;
             --warning: #F59E0B;
-            --info: #0EA5E9;
             --sidebar-width: 280px;
         }
 
@@ -33,24 +31,24 @@
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-slate);
             color: var(--text-dark);
-            -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
         }
 
-        .h-44 { height: 44px !important; }
-        .rounded-xl-custom { border-radius: 12px !important; }
-        .rounded-2xl-custom { border-radius: 16px !important; }
+        .rounded-xl-custom {
+            border-radius: 12px;
+        }
 
-        /* ============================================================
-           LEFT FIXED SIDEBAR LAYOUT
-           ============================================================ */
+        .rounded-2xl-custom {
+            border-radius: 16px;
+        }
+
         .admin-sidebar-left {
             width: var(--sidebar-width);
             height: 100vh;
             position: fixed;
             top: 0;
             left: 0;
-            background-color: #ffffff;
+            background: white;
             border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
@@ -70,13 +68,13 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 8px 12px 24px 12px;
+            padding: 8px 12px 24px;
             border-bottom: 1px solid var(--border-color);
             margin-bottom: 24px;
         }
 
         .system-logo {
-            background-color: var(--primary);
+            background: var(--primary);
             color: white;
             width: 38px;
             height: 38px;
@@ -85,14 +83,13 @@
             justify-content: center;
         }
 
-        /* Menu dọc bên trái */
         .nav-menu-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
             list-style: none;
             padding: 0;
             margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
 
         .sidebar-menu-btn {
@@ -101,474 +98,693 @@
             background: transparent;
             color: var(--text-muted);
             font-weight: 500;
-            font-size: 0.925rem;
             padding: 12px 16px;
             border-radius: 12px;
-            transition: all 0.2s ease-in-out;
             display: flex;
             align-items: center;
             gap: 12px;
-            text-align: left;
+            transition: all 0.2s ease;
         }
 
         .sidebar-menu-btn:hover {
-            background-color: var(--bg-slate);
+            background: var(--bg-slate);
             color: var(--text-dark);
         }
 
         .sidebar-menu-btn.active {
-            background-color: var(--primary-light);
+            background: var(--primary-light);
             color: var(--primary);
             font-weight: 600;
         }
 
-        .signout-wrapper {
-            border-top: 1px solid var(--border-color);
-            padding-top: 16px;
-        }
-
-        .btn-signout {
-            width: 100%;
-            border: none;
-            background: transparent;
-            color: #EF4444;
-            font-weight: 500;
-            font-size: 0.925rem;
-            padding: 12px 16px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transition: all 0.2s ease-in-out;
-        }
-        .btn-signout:hover {
-            background-color: #FEF2F2;
-            color: #DC2626;
-        }
-
-        /* ============================================================
-           COMPONENTS, BADGES & HIGHLIGHTING
-           ============================================================ */
         .btn-primary-custom {
-            background-color: var(--primary);
+            background: var(--primary);
             border: none;
             color: white;
             font-weight: 500;
         }
-        .btn-primary-custom:hover { background-color: var(--primary-hover); }
+
+        .btn-primary-custom:hover {
+            background: var(--primary-hover);
+            color: white;
+        }
 
         .btn-secondary-custom {
-            background-color: #ffffff;
+            background: white;
             border: 1px solid var(--border-color);
             color: var(--text-muted);
-            font-weight: 500;
         }
-        .btn-secondary-custom:hover { background-color: var(--bg-slate); color: var(--text-dark); }
 
-        /* Violation Badges */
         .badge-danger-custom {
-            background-color: #FEE2E2;
+            background: #FEE2E2;
             color: var(--danger);
             border: 1px solid #FCA5A5;
             font-size: 0.75rem;
-            font-weight: 600;
         }
+
         .badge-warning-custom {
-            background-color: #FEF3C7;
+            background: #FEF3C7;
             color: #D97706;
             border: 1px solid #FCD34D;
             font-size: 0.75rem;
-            font-weight: 600;
-        }
-        .badge-info-custom {
-            background-color: #E0F2FE;
-            color: var(--primary);
-            border: 1px solid #93C5FD;
-            font-size: 0.75rem;
-            font-weight: 600;
         }
 
-        /* Statuses indicator */
-        .status-pill {
+        .badge-success-custom {
+            background: #DCFCE7;
+            color: #15803D;
+            border: 1px solid #86EFAC;
             font-size: 0.75rem;
-            font-weight: 500;
-            padding: 4px 10px;
-            border-radius: 9999px;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
         }
-        .status-waiting { background-color: #FFF7ED; color: #C2410C; }
-        .status-waiting::before { content: ''; width: 6px; height: 6px; background-color: var(--warning); border-radius: 50%; }
-        .status-approved { background-color: #ECFDF5; color: #047857; }
-        .status-approved::before { content: ''; width: 6px; height: 6px; background-color: var(--success); border-radius: 50%; }
-        .status-rejected { background-color: #FEF2F2; color: #B91C1C; }
-        .status-rejected::before { content: ''; width: 6px; height: 6px; background-color: var(--danger); border-radius: 50%; }
+
+        .upload-zone {
+            border: 2px dashed #CBD5E1;
+            border-radius: 16px;
+            padding: 48px;
+            background: #fff;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--primary);
+            background: #F8FBFF;
+        }
+
+        .result-card {
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            background: white;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .result-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .preview-image {
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
 
         .fade-in-section {
             animation: fadeIn 0.3s ease-in-out forwards;
         }
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         @media (max-width: 1024px) {
-            .admin-sidebar-left { width: 70px; padding: 24px 8px; }
-            .admin-sidebar-left .brand-title, .admin-sidebar-left .menu-text { display: none; }
-            .brand-wrapper { padding: 8px 0 24px 0; justify-content: center; }
-            .sidebar-menu-btn, .btn-signout { justify-content: center; padding: 12px; }
-            .main-dashboard-content { margin-left: 70px; width: calc(100% - 70px); padding: 24px; }
+            .admin-sidebar-left {
+                width: 70px;
+                padding: 24px 8px;
+            }
+
+            .brand-title,
+            .menu-text {
+                display: none;
+            }
+
+            .main-dashboard-content {
+                margin-left: 70px;
+                width: calc(100% - 70px);
+                padding: 24px;
+            }
         }
     </style>
 </head>
 <body>
 
 <aside class="admin-sidebar-left">
+
     <div>
+
         <div class="brand-wrapper">
             <div class="system-logo rounded-xl-custom">
                 <i class="fa-solid fa-shield-halved"></i>
             </div>
-            <span class="brand-title fw-bold fs-5 tracking-tight text-dark">Traffic Detect</span>
+            <span class="brand-title fw-bold fs-5">Traffic Detect</span>
         </div>
 
         <nav>
             <ul class="nav-menu-list">
+
                 <li>
-                    <button id="tab-review-btn" class="sidebar-menu-btn active" onclick="switchTab('review')">
-                        <i class="fa-solid fa-file-shield fa-fw"></i>
-                        <span class="menu-text">Review report</span>
+                    <button id="tab-upload-btn" class="sidebar-menu-btn active" onclick="switchTab('upload')">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <span class="menu-text">Upload data</span>
                     </button>
                 </li>
+
                 <li>
-                    <button id="tab-appeal-btn" class="sidebar-menu-btn" onclick="switchTab('appeal')">
-                        <i class="fa-solid fa-envelope-open-text fa-fw"></i>
-                        <span class="menu-text">Resolve appeal</span>
+                    <button id="tab-result-btn" class="sidebar-menu-btn" onclick="switchTab('result')">
+                        <i class="fa-solid fa-magnifying-glass-chart"></i>
+                        <span class="menu-text">Check result</span>
                     </button>
                 </li>
+
+                <li>
+                    <button id="tab-feedback-btn" class="sidebar-menu-btn" onclick="switchTab('feedback')">
+                        <i class="fa-solid fa-comments"></i>
+                        <span class="menu-text">Review feedback</span>
+                    </button>
+                </li>
+
                 <li>
                     <button id="tab-statistic-btn" class="sidebar-menu-btn" onclick="switchTab('statistic')">
-                        <i class="fa-solid fa-chart-pie fa-fw"></i>
-                        <span class="menu-text">Monthly statistic</span>
+                        <i class="fa-solid fa-chart-column"></i>
+                        <span class="menu-text">See monthly statistic</span>
                     </button>
                 </li>
+
             </ul>
         </nav>
-    </div>
-
-    <div class="signout-wrapper">
-
-        <form th:action="@{/logout}" method="post">
-
-            <button type="submit" class="btn-signout">
-                <i class="fa-solid fa-right-from-bracket fa-fw"></i>
-                <span class="menu-text">Sign out</span>
-            </button>
-
-        </form>
 
     </div>
+
+    <form action="/logout" method="post">
+        <button type="submit" class="sidebar-menu-btn text-danger">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span class="menu-text">Sign out</span>
+        </button>
+    </form>
+
 </aside>
 
 <main class="main-dashboard-content">
 
     <header class="d-flex align-items-center justify-content-between bg-white rounded-2xl-custom border p-3 mb-4 shadow-sm">
-        <div class="d-flex align-items-center gap-3">
-            <h1 class="h5 mb-0 fw-bold text-dark">
-                Traffic violation detect
-            </h1>
+        <div>
+            <h1 class="h5 fw-bold mb-1">Authority Dashboard</h1>
+            <div class="text-secondary small">Traffic Violation Detection Management System</div>
         </div>
-        <div class="text-sm text-secondary">
-            <i class="fa-regular fa-user-circle me-1"></i> Cán bộ kiểm duyệt viên
+
+        <div class="text-secondary">
+            <i class="fa-regular fa-user-circle me-1"></i>
+            Authority Officer
         </div>
     </header>
 
-    <div id="section-review" class="fade-in-section">
+    <!-- ====================================================== -->
+    <!-- UPLOAD DATA -->
+    <!-- ====================================================== -->
+
+    <section id="section-upload" class="fade-in-section">
+
         <div class="mb-4">
-            <h2 class="h3 fw-bold mb-1">Duyệt biên bản báo cáo</h2>
-            <p class="text-secondary small mb-0">Xem xét các đối tượng vi phạm đa nhãn do AI phát hiện và đưa ra quyết định xử phạt chính thức.</p>
+            <h2 class="fw-bold">Upload data</h2>
+            <p class="text-secondary mb-0">
+                Upload image, image folder or video for AI traffic violation detection.
+            </p>
         </div>
 
-        <div class="card rounded-2xl-custom border-0 shadow-sm overflow-hidden">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0 text-sm">
-                    <thead class="table-light border-bottom text-uppercase tracking-wider text-secondary" style="font-size: 0.75rem; font-weight: 600;">
-                    <tr>
-                        <th class="px-4 py-3">Mã Report</th>
-                        <th class="px-4 py-3">File Media</th>
-                        <th class="px-4 py-3">Lỗi AI phát hiện (Multi-label)</th>
-                        <th class="px-4 py-3">Độ tin cậy trung bình</th>
-                        <th class="px-4 py-3">Trạng thái</th>
-                        <th class="px-4 py-3 text-end">Thao tác duyệt</th>
-                    </tr>
-                    </thead>
-                    <tbody id="report-table-body"></tbody>
-                </table>
+        <div class="card border-0 shadow-sm rounded-2xl-custom p-4">
+
+            <div class="row g-4 mb-4">
+                <div class="col-12">
+                    <label for="uploadType" class="form-label fw-semibold mb-3">Upload type</label>
+                    <select id="uploadType" class="form-select rounded-xl-custom py-3" onchange="onUploadTypeChange()">
+                        <option value="SINGLE_IMAGE">Single image</option>
+                        <option value="FOLDER">Folder images</option>
+                        <option value="VIDEO">Video</option>
+                    </select>
+                </div>
             </div>
-        </div>
-    </div>
 
-    <div id="section-appeal" class="fade-in-section d-none">
+            <div id="uploadZone" class="upload-zone mb-4">
+                <i class="fa-solid fa-cloud-arrow-up fa-3x text-primary mb-3"></i>
+                <h5 class="fw-bold">Drag &amp; Drop files here</h5>
+                <p id="uploadHint" class="text-secondary mb-4">
+                    Select one image (JPG, PNG, WEBP).
+                </p>
+
+                <input type="file" id="fileInput" class="form-control mb-3 py-3" accept="image/jpeg,image/png,image/webp">
+
+                <div id="selectedFiles" class="text-start small text-secondary mb-3"></div>
+
+                <button type="button" id="submitUploadBtn" class="btn btn-primary-custom rounded-xl-custom px-4 py-2" onclick="submitUpload()">
+                    <span id="submitBtnText">Submit to AI Service</span>
+                    <span id="submitBtnSpinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status"></span>
+                </button>
+            </div>
+
+            <div id="uploadSuccessAlert" class="alert alert-success rounded-xl-custom border-0 d-none mb-3"></div>
+            <div id="uploadErrorAlert" class="alert alert-danger rounded-xl-custom border-0 d-none mb-3"></div>
+
+            <div class="alert alert-primary rounded-xl-custom border-0 mb-0">
+                <i class="fa-solid fa-circle-info me-2"></i>
+                Files are saved locally:
+                <code>.../storage/image</code>, <code>.../storage/folder</code>, or <code>.../storage/video</code>
+                (see <code>application.properties</code>).
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- ====================================================== -->
+    <!-- CHECK RESULT -->
+    <!-- ====================================================== -->
+
+    <section id="section-result" class="fade-in-section d-none">
+
         <div class="mb-4">
-            <h2 class="h3 fw-bold mb-1">Giải quyết khiếu nại từ người dân</h2>
-            <p class="text-secondary small mb-0">Xử lý các đơn khiếu nại đối với biên bản bị từ chối xử phạt (Ràng buộc 1:1 trên từng báo cáo vi phạm).</p>
+            <h2 class="fw-bold">Check result</h2>
+            <p class="text-secondary mb-0">
+                Review uploaded sessions and manually correct AI prediction results.
+            </p>
         </div>
 
-        <div class="card rounded-2xl-custom border-0 shadow-sm overflow-hidden">
+        <div class="row g-4">
+
+            <div class="col-lg-4">
+
+                <div class="card border-0 shadow-sm rounded-2xl-custom p-3">
+
+                    <div class="result-card mb-3" onclick="loadResultDetail(1)">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="fw-semibold">Upload #001</div>
+                            <span class="badge badge-danger-custom">2 violations</span>
+                        </div>
+
+                        <div class="small text-secondary mb-2">
+                            video_nga_tu_so.mp4
+                        </div>
+
+                        <div class="small text-secondary">
+                            Uploaded at: 25/05/2026 09:32
+                        </div>
+                    </div>
+
+                    <div class="result-card">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="fw-semibold">Upload #002</div>
+                            <span class="badge badge-success-custom">Normal</span>
+                        </div>
+
+                        <div class="small text-secondary mb-2">
+                            img_pho_hue.jpg
+                        </div>
+
+                        <div class="small text-secondary">
+                            Uploaded at: 25/05/2026 10:14
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-8">
+
+                <div class="card border-0 shadow-sm rounded-2xl-custom p-4">
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h5 class="fw-bold mb-1">Detection detail</h5>
+                            <div class="text-secondary small">Authority can modify and save corrected result.</div>
+                        </div>
+
+                        <button class="btn btn-primary-custom rounded-xl-custom px-4">
+                            Save correction
+                        </button>
+                    </div>
+
+                    <img src="https://placehold.co/900x500" class="preview-image mb-4">
+
+                    <div class="row g-3 mb-4">
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">AI prediction</label>
+                            <input class="form-control rounded-xl-custom" value="NO_HELMET">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Confidence</label>
+                            <input class="form-control rounded-xl-custom" value="94.2%">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Authority correction</label>
+                            <select class="form-select rounded-xl-custom">
+                                <option>No violation</option>
+                                <option selected>No helmet</option>
+                                <option>Using mobile phone</option>
+                                <option>Triple riding</option>
+                            </select>
+                        </div>
+
+                    </div>
+
+                    <div class="alert alert-warning rounded-xl-custom border-0 mb-0">
+                        <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                        Corrected labels will be stored for future dataset retraining.
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- ====================================================== -->
+    <!-- REVIEW FEEDBACK -->
+    <!-- ====================================================== -->
+
+    <section id="section-feedback" class="fade-in-section d-none">
+
+        <div class="mb-4">
+            <h2 class="fw-bold">Review feedback</h2>
+            <p class="text-secondary mb-0">
+                Handle feedback submitted by citizens when AI predicts incorrect violations.
+            </p>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-2xl-custom overflow-hidden">
+
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0 text-sm">
-                    <thead class="table-light border-bottom text-uppercase tracking-wider text-secondary" style="font-size: 0.75rem; font-weight: 600;">
+
+                <table class="table align-middle mb-0">
+
+                    <thead class="table-light">
                     <tr>
-                        <th class="px-4 py-3">Mã Khiếu Nại</th>
-                        <th class="px-4 py-3">Mã Report</th>
-                        <th class="px-4 py-3">Người khiếu nại</th>
-                        <th class="px-4 py-3">Nội dung khiếu nại</th>
-                        <th class="px-4 py-3">Trạng thái đơn</th>
-                        <th class="px-4 py-3 text-end">Hành động</th>
+                        <th class="px-4 py-3">Feedback ID</th>
+                        <th class="px-4 py-3">Upload ID</th>
+                        <th class="px-4 py-3">Citizen</th>
+                        <th class="px-4 py-3">Feedback content</th>
+                        <th class="px-4 py-3">AI Result</th>
+                        <th class="px-4 py-3 text-end">Action</th>
                     </tr>
                     </thead>
-                    <tbody id="appeal-table-body">
+
+                    <tbody>
+
+                    <tr>
+                        <td class="px-4 py-3 fw-bold">#FB-001</td>
+                        <td class="px-4 py-3">#UP-001</td>
+                        <td class="px-4 py-3">Nguyen Van A</td>
+                        <td class="px-4 py-3">
+                            I was wearing a gray helmet but AI detected incorrectly.
+                        </td>
+                        <td class="px-4 py-3">
+                            <span class="badge badge-danger-custom">NO_HELMET</span>
+                        </td>
+                        <td class="px-4 py-3 text-end">
+                            <button class="btn btn-secondary-custom btn-sm rounded-xl-custom me-2">
+                                Reject
+                            </button>
+
+                            <button class="btn btn-warning btn-sm text-white rounded-xl-custom me-2">
+                                Correct
+                            </button>
+
+                            <button class="btn btn-primary-custom btn-sm rounded-xl-custom">
+                                Confirm
+                            </button>
+                        </td>
+                    </tr>
+
                     </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
 
-    <div id="section-statistic" class="fade-in-section d-none">
+                </table>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- ====================================================== -->
+    <!-- MONTHLY STATISTIC -->
+    <!-- ====================================================== -->
+
+    <section id="section-statistic" class="fade-in-section d-none">
+
         <div class="mb-4">
-            <h2 class="h3 fw-bold mb-1">Thống kê số liệu hàng tháng</h2>
-            <p class="text-secondary small mb-0">Báo cáo tổng hợp mật độ và xu hướng vi phạm giao thông trích xuất từ dữ liệu hệ thống.</p>
+            <h2 class="fw-bold">See monthly statistic</h2>
+            <p class="text-secondary mb-0">
+                Monitor traffic violation trends and authority review performance.
+            </p>
         </div>
 
         <div class="row g-4 mb-4">
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="card rounded-2xl-custom border-0 shadow-sm p-4 bg-white">
-                    <div class="text-secondary small font-medium mb-1">Tổng Số Lượt Upload</div>
-                    <div class="h2 fw-bold text-dark mb-0">1,248</div>
+
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm rounded-2xl-custom p-4">
+                    <div class="text-secondary small mb-2">Total Uploads</div>
+                    <div class="display-6 fw-bold">1,248</div>
                 </div>
             </div>
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="card rounded-2xl-custom border-0 shadow-sm p-4 bg-white">
-                    <div class="text-secondary small font-medium mb-1">Lỗi Không Đội Mũ (High)</div>
-                    <div class="h2 fw-bold text-danger mb-0">642</div>
+
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm rounded-2xl-custom p-4">
+                    <div class="text-secondary small mb-2">No Helmet</div>
+                    <div class="display-6 fw-bold text-danger">642</div>
                 </div>
             </div>
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="card rounded-2xl-custom border-0 shadow-sm p-4 bg-white">
-                    <div class="text-secondary small font-medium mb-1">Lỗi Dùng Điện Thoại (Medium)</div>
-                    <div class="h2 fw-bold text-warning mb-0">318</div>
+
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm rounded-2xl-custom p-4">
+                    <div class="text-secondary small mb-2">Using Mobile</div>
+                    <div class="display-6 fw-bold text-warning">318</div>
                 </div>
             </div>
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="card rounded-2xl-custom border-0 shadow-sm p-4 bg-white">
-                    <div class="text-secondary small font-medium mb-1">Tỷ Lệ Duyệt Xác Nhận</div>
-                    <div class="h2 fw-bold text-success mb-0">94.6%</div>
+
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm rounded-2xl-custom p-4">
+                    <div class="text-secondary small mb-2">Approved Accuracy</div>
+                    <div class="display-6 fw-bold text-success">94.6%</div>
                 </div>
             </div>
+
         </div>
 
-        <div class="card rounded-2xl-custom border-0 shadow-sm overflow-hidden">
-            <div class="card-body p-4 bg-white border-bottom">
-                <h5 class="fw-bold mb-0 text-sm">Bảng dữ liệu lưu trữ chi tiết năm 2026</h5>
-            </div>
+        <div class="card border-0 shadow-sm rounded-2xl-custom overflow-hidden">
+
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0 text-sm">
-                    <thead class="table-light text-secondary text-xs font-semibold uppercase">
+
+                <table class="table table-hover align-middle mb-0">
+
+                    <thead class="table-light">
                     <tr>
-                        <th class="px-4 py-3">Tháng / Năm</th>
-                        <th class="px-4 py-3">Tổng số báo cáo</th>
-                        <th class="px-4 py-3">Không đội mũ bảo hiểm</th>
-                        <th class="px-4 py-3">Sử dụng điện thoại</th>
-                        <th class="px-4 py-3">Chở quá số người</th>
-                        <th class="px-4 py-3">Đã duyệt biên bản</th>
+                        <th class="px-4 py-3">Month</th>
+                        <th class="px-4 py-3">Total Reports</th>
+                        <th class="px-4 py-3">No Helmet</th>
+                        <th class="px-4 py-3">Using Mobile</th>
+                        <th class="px-4 py-3">Triple Riding</th>
+                        <th class="px-4 py-3">Corrected By Authority</th>
                     </tr>
                     </thead>
+
                     <tbody>
-                    <tr class="border-bottom">
-                        <td class="px-4 py-3 fw-medium">Tháng 05 / 2026</td>
+
+                    <tr>
+                        <td class="px-4 py-3 fw-semibold">05 / 2026</td>
                         <td class="px-4 py-3">412</td>
                         <td class="px-4 py-3 text-danger fw-semibold">210</td>
                         <td class="px-4 py-3 text-warning fw-semibold">95</td>
                         <td class="px-4 py-3 text-primary fw-semibold">45</td>
-                        <td class="px-4 py-3 text-success font-semibold">380</td>
+                        <td class="px-4 py-3 text-success fw-semibold">32</td>
                     </tr>
+
                     </tbody>
+
                 </table>
+
             </div>
+
         </div>
-    </div>
+
+    </section>
 
 </main>
 
 <script>
-    // Data mẫu Reports cần duyệt
-    let reportsData = [
-        { id: 101, fileName: 'video_pho_hue_01.mp4', mediaType: 'VIDEO', violations: ['NO_HELMET', 'TRIPLE_RIDING'], confidence: 0.89, status: 'WAITING_REVIEW' },
-        { id: 102, fileName: 'img_nga_tu_so_04.jpg', mediaType: 'IMAGE', violations: ['USING_PHONE'], confidence: 0.94, status: 'WAITING_REVIEW' },
-        { id: 103, fileName: 'video_cau_giay_hd.mp4', mediaType: 'VIDEO', violations: ['NO_HELMET'], confidence: 0.78, status: 'APPROVED' },
-        { id: 104, fileName: 'img_khu_duy_tien.png', mediaType: 'IMAGE', violations: ['NORMAL'], confidence: 0.96, status: 'REJECTED' }
-    ];
+    const uploadZone = document.getElementById('uploadZone');
+    const fileInput = document.getElementById('fileInput');
+    const uploadTypeSelect = document.getElementById('uploadType');
+    const uploadHint = document.getElementById('uploadHint');
+    const selectedFilesEl = document.getElementById('selectedFiles');
+    const uploadSuccessAlert = document.getElementById('uploadSuccessAlert');
+    const uploadErrorAlert = document.getElementById('uploadErrorAlert');
 
-    // Data mẫu Đơn khiếu nại (Quan hệ 1:1 nghiêm ngặt với các Report bị Rejected)
-    let appealsData = [
-        { id: 501, reportId: 104, applicant: 'Lê Hoàng C', message: 'Tôi có đội mũ bảo hiểm mờ màu xám, hệ thống AI nhìn nhầm thành không đội, kính mong cán bộ xem xét lại tệp video đính kèm.', status: 'PENDING' }
-    ];
-
-    // 1. Chuyển đổi tab động menu dọc trái
     function switchTab(tabName) {
-        const reviewSection = document.getElementById('section-review');
-        const appealSection = document.getElementById('section-appeal');
-        const statisticSection = document.getElementById('section-statistic');
+        const sections = {
+            upload: document.getElementById('section-upload'),
+            result: document.getElementById('section-result'),
+            feedback: document.getElementById('section-feedback'),
+            statistic: document.getElementById('section-statistic')
+        };
 
-        const btnReview = document.getElementById('tab-review-btn');
-        const btnAppeal = document.getElementById('tab-appeal-btn');
-        const btnStatistic = document.getElementById('tab-statistic-btn');
+        Object.values(sections).forEach(section => section.classList.add('d-none'));
+        sections[tabName].classList.remove('d-none');
 
-        // Ẩn toàn bộ các section
-        reviewSection.classList.add('d-none');
-        appealSection.classList.add('d-none');
-        statisticSection.classList.add('d-none');
+        document.querySelectorAll('.sidebar-menu-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`tab-${tabName}-btn`).classList.add('active');
+    }
 
-        btnReview.classList.remove('active');
-        btnAppeal.classList.remove('active');
-        btnStatistic.classList.remove('active');
+    function loadResultDetail(id) {
+        console.log('Load detail for upload:', id);
+    }
 
-        if (tabName === 'review') {
-            reviewSection.classList.remove('d-none');
-            btnReview.classList.add('active');
-            renderReportTable();
-        } else if (tabName === 'appeal') {
-            appealSection.classList.remove('d-none');
-            btnAppeal.classList.add('active');
-            renderAppealTable();
-        } else if (tabName === 'statistic') {
-            statisticSection.classList.remove('d-none');
-            btnStatistic.classList.add('active');
+    function onUploadTypeChange() {
+        const type = uploadTypeSelect.value;
+        fileInput.value = '';
+        selectedFilesEl.textContent = '';
+        hideAlerts();
+
+        fileInput.removeAttribute('multiple');
+        fileInput.removeAttribute('webkitdirectory');
+        fileInput.removeAttribute('directory');
+
+        if (type === 'SINGLE_IMAGE') {
+            uploadHint.textContent = 'Select exactly one image (JPG, PNG, WEBP).';
+            fileInput.accept = 'image/jpeg,image/png,image/webp';
+        } else if (type === 'FOLDER') {
+            uploadHint.textContent = 'Select a folder containing images (JPG, PNG, WEBP).';
+            fileInput.accept = 'image/jpeg,image/png,image/webp';
+            fileInput.setAttribute('multiple', '');
+            fileInput.setAttribute('webkitdirectory', '');
+            fileInput.setAttribute('directory', '');
+        } else {
+            uploadHint.textContent = 'Select exactly one video (MP4, MOV, AVI, MKV).';
+            fileInput.accept = 'video/mp4,video/quicktime,video/x-msvideo,video/x-matroska';
         }
     }
 
-    // 2. Render danh sách hàng bảng duyệt báo cáo vi phạm
-    function renderReportTable() {
-        const tbody = document.getElementById('report-table-body');
-        tbody.innerHTML = '';
-
-        reportsData.forEach(report => {
-            let violationBadges = '';
-            if (report.violations.includes('NORMAL') || report.violations.length === 0) {
-                violationBadges = `<span class="badge badge-info-custom rounded px-2 py-0.5">Không vi phạm</span>`;
-            } else {
-                report.violations.forEach(v => {
-                    if (v === 'NO_HELMET' || v === 'TRIPLE_RIDING') {
-                        violationBadges += `<span class="badge badge-danger-custom rounded px-2 py-0.5 me-1 mb-1"><i class="fa-solid fa-triangle-exclamation me-1"></i>${v}</span>`;
-                    } else if (v === 'USING_PHONE') {
-                        violationBadges += `<span class="badge badge-warning-custom rounded px-2 py-0.5 me-1 mb-1"><i class="fa-solid fa-mobile-screen me-1"></i>${v}</span>`;
-                    }
-                });
-            }
-
-            let statusPill = '';
-            if (report.status === 'WAITING_REVIEW') statusPill = `<span class="status-pill status-waiting">Chờ duyệt</span>`;
-            else if (report.status === 'APPROVED') statusPill = `<span class="status-pill status-approved">Đã xác nhận</span>`;
-            else if (report.status === 'REJECTED') statusPill = `<span class="status-pill status-rejected">Đã hủy bỏ</span>`;
-
-            let actionButtons = '';
-            if (report.status === 'WAITING_REVIEW') {
-                actionButtons = `
-                        <button class="btn btn-secondary-custom btn-sm rounded-xl-custom px-3 me-2" onclick="processReview(${report.id}, 'REJECTED')">Hủy</button>
-                        <button class="btn btn-primary-custom btn-sm rounded-xl-custom px-3" onclick="processReview(${report.id}, 'APPROVED')">Xác nhận phạt</button>
-                    `;
-            } else {
-                actionButtons = `<span class="text-muted small italic">Đã xử lý xong</span>`;
-            }
-
-            const fileIcon = report.mediaType === 'VIDEO' ? '<i class="fa-regular fa-file-video text-primary me-2"></i>' : '<i class="fa-regular fa-image text-info me-2"></i>';
-
-            const row = document.createElement('tr');
-            row.className = 'border-bottom';
-            row.innerHTML = `
-                    <td class="px-4 py-3 fw-bold text-dark">#RP-${report.id}</td>
-                    <td class="px-4 py-3 text-secondary">${fileIcon}${report.fileName}</td>
-                    <td class="px-4 py-3">${violationBadges}</td>
-                    <td class="px-4 py-3 text-secondary fw-medium">${(report.confidence * 100).toFixed(1)}%</td>
-                    <td class="px-4 py-3">${statusPill}</td>
-                    <td class="px-4 py-3 text-end">${actionButtons}</td>
-                `;
-            tbody.appendChild(row);
-        });
+    function hideAlerts() {
+        uploadSuccessAlert.classList.add('d-none');
+        uploadErrorAlert.classList.add('d-none');
     }
 
-    // 3. Render danh sách bảng khiếu nại (Tab mới xử lý)
-    function renderAppealTable() {
-        const tbody = document.getElementById('appeal-table-body');
-        tbody.innerHTML = '';
+    function showError(message) {
+        uploadErrorAlert.textContent = message;
+        uploadErrorAlert.classList.remove('d-none');
+        uploadSuccessAlert.classList.add('d-none');
+    }
 
-        if (appealsData.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-secondary py-4">Hiện không có đơn khiếu nại nào cần giải quyết.</td></tr>`;
+    function showSuccess(message) {
+        uploadSuccessAlert.textContent = message;
+        uploadSuccessAlert.classList.remove('d-none');
+        uploadErrorAlert.classList.add('d-none');
+    }
+
+    function renderSelectedFiles() {
+        const files = fileInput.files;
+        if (!files || files.length === 0) {
+            selectedFilesEl.textContent = '';
+            return;
+        }
+        const names = Array.from(files).map(f => f.name).join(', ');
+        selectedFilesEl.textContent = `${files.length} file(s): ${names}`;
+    }
+
+    fileInput.addEventListener('change', renderSelectedFiles);
+
+    uploadZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadZone.style.borderColor = 'var(--primary)';
+    });
+
+    uploadZone.addEventListener('dragleave', () => {
+        uploadZone.style.borderColor = '#CBD5E1';
+    });
+
+    uploadZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadZone.style.borderColor = '#CBD5E1';
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            fileInput.files = e.dataTransfer.files;
+            renderSelectedFiles();
+        }
+    });
+
+    async function submitUpload() {
+        hideAlerts();
+
+        const uploadType = uploadTypeSelect.value;
+        const files = fileInput.files;
+
+        if (!files || files.length === 0) {
+            showError('Please select file(s) to upload.');
             return;
         }
 
-        appealsData.forEach(appeal => {
-            let statusPill = '';
-            let actionButtons = '';
+        if (uploadType === 'SINGLE_IMAGE' && files.length !== 1) {
+            showError('Single image upload requires exactly one file.');
+            return;
+        }
 
-            if (appeal.status === 'PENDING') {
-                statusPill = `<span class="status-pill status-waiting">Đang xác minh</span>`;
-                actionButtons = `
-                        <button class="btn btn-secondary-custom btn-sm rounded-xl-custom px-3 me-2" onclick="processAppeal(${appeal.id}, ${appeal.reportId}, 'REJECTED_FINAL')">Bác đơn</button>
-                        <button class="btn btn-primary-custom btn-sm rounded-xl-custom px-3" onclick="processAppeal(${appeal.id}, ${appeal.reportId}, 'APPROVED_APPEAL')">Chấp nhận đơn</button>
-                    `;
-            } else if (appeal.status === 'APPROVED_APPEAL') {
-                statusPill = `<span class="status-pill status-approved">Đã chấp nhận</span>`;
-                actionButtons = `<span class="text-muted small">Đã đảo ngược quyết định</span>`;
-            } else {
-                statusPill = `<span class="status-pill status-rejected">Đã bác đơn</span>`;
-                actionButtons = `<span class="text-muted small">Đã giữ nguyên án phạt</span>`;
+        if (uploadType === 'VIDEO' && files.length !== 1) {
+            showError('Video upload requires exactly one file.');
+            return;
+        }
+
+        if (uploadType === 'FOLDER' && files.length < 1) {
+            showError('Folder upload requires at least one image.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('uploadType', uploadType);
+        for (const file of files) {
+            formData.append('files', file);
+        }
+
+        const submitBtn = document.getElementById('submitUploadBtn');
+        const spinner = document.getElementById('submitBtnSpinner');
+        const btnText = document.getElementById('submitBtnText');
+
+        submitBtn.disabled = true;
+        spinner.classList.remove('d-none');
+        btnText.textContent = 'Uploading...';
+
+        try {
+            const response = await fetch('/authority/api/upload', {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin'
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                showError(data.message || 'Upload failed. Please try again.');
+                return;
             }
 
-            const row = document.createElement('tr');
-            row.className = 'border-bottom';
-            row.innerHTML = `
-                    <td class="px-4 py-3 fw-bold text-dark">#AP-${appeal.id}</td>
-                    <td class="px-4 py-3 fw-semibold text-primary">#RP-${appeal.reportId}</td>
-                    <td class="px-4 py-3 text-dark fw-medium">${appeal.applicant}</td>
-                    <td class="px-4 py-3 text-secondary text-wrap" style="max-width: 340px;">${appeal.message}</td>
-                    <td class="px-4 py-3">${statusPill}</td>
-                    <td class="px-4 py-3 text-end">${actionButtons}</td>
-                `;
-            tbody.appendChild(row);
-        });
+            const fileCount = data.mediaFiles ? data.mediaFiles.length : 0;
+            showSuccess(
+                `Upload successful! Session #${data.sessionId} — ${fileCount} file(s) saved locally. Status: ${data.status}`
+            );
+            fileInput.value = '';
+            selectedFilesEl.textContent = '';
+        } catch (err) {
+            showError('Network error: ' + err.message);
+        } finally {
+            submitBtn.disabled = false;
+            spinner.classList.add('d-none');
+            btnText.textContent = 'Submit to AI Service';
+        }
     }
 
-    // Logic thay đổi trạng thái khi cán bộ duyệt hồ sơ gốc
-    function processReview(reportId, newStatus) {
-        reportsData = reportsData.map(rep => rep.id === reportId ? { ...rep, status: newStatus } : rep);
-        renderReportTable();
-    }
-
-    // Logic xử lý khiếu nại (Đồng bộ thay đổi trạng thái của cả đơn khiếu nại lẫn Biên bản gốc)
-    function processAppeal(appealId, reportId, decision) {
-        // 1. Cập nhật trạng thái đơn khiếu nại
-        appealsData = appealsData.map(app => app.id === appealId ? { ...app, status: decision } : app);
-
-        // 2. Cập nhật trạng thái liên đới của Report tương ứng dựa theo kết quả giải quyết khiếu nại
-        reportsData = reportsData.map(rep => {
-            if (rep.id === reportId) {
-                return { ...rep, status: decision === 'APPROVED_APPEAL' ? 'APPROVED' : 'CLOSED' };
-            }
-            return rep;
-        });
-
-        alert(decision === 'APPROVED_APPEAL' ? 'Đã chấp nhận đơn khiếu nại. Biên bản gốc đã được khôi phục thành trạng thái Đã xác nhận xử phạt.' : 'Đã bác đơn khiếu nại. Hồ sơ biên bản vi phạm chính thức đóng lại.');
-        renderAppealTable();
-    }
-
-
-    document.addEventListener('DOMContentLoaded', () => {
-        renderReportTable();
-    });
+    onUploadTypeChange();
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
