@@ -1,5 +1,7 @@
 package vn.icktmeanz.trafficViolation.constant;
-public enum MediaType {
-    IMAGE,
+
+public enum UploadType {
+    SINGLE_IMAGE,
+    FOLDER,
     VIDEO
 }

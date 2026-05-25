@@ -22,6 +22,11 @@ public class DetectedViolation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "media_id", nullable = false)
+    private MediaFile mediaFile;
+
+    // Map trực tiếp với kiểu mảng dữ liệu text[] của PostgreSQL bằng Hypersistence Utils
     @Type(ListArrayType.class)
     @Column(
             name = "violation_types",
@@ -29,28 +34,16 @@ public class DetectedViolation {
     )
     private List<String> violationTypes;
 
-    private Double confidence;
-
-    @Column(columnDefinition = "jsonb")
+    // Lưu chuỗi cấu trúc JSON tọa độ bounding box: {"xmin":10, "ymin":20, ...}
+    @Column(name = "bounding_box", columnDefinition = "jsonb", nullable = false)
     private String boundingBox;
 
-    private Integer frameNumber;
+    @Column(name = "confidence")
+    private Double confidence;
 
-    private Integer objectTrackingId;
+    @Column(name = "frame_number")
+    private Integer frameNumber; // Lưu vị trí frame nếu bóc tách từ video 
 
-    private LocalDateTime detectedAt;
-
-    @ManyToOne
-    @JoinColumn(name = "report_id")
-    private Report report;
-
-    @PrePersist
-    public void prePersist() {
-
-        detectedAt = LocalDateTime.now();
-
-        if(violationTypes == null) {
-            violationTypes = new ArrayList<>();
-        }
-    }
+    @Column(name = "is_authority_corrected", nullable = false)
+    private boolean isAuthorityCorrected = false;
 }

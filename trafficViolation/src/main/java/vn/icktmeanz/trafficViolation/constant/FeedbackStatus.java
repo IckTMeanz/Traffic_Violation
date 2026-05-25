@@ -1,7 +1,7 @@
 package vn.icktmeanz.trafficViolation.constant;
 
-public enum ReviewDecision {
+public enum FeedbackStatus {
+    PENDING,
     APPROVED,
-    REJECTED,
-    UPDATED
+    REJECTED
 }
