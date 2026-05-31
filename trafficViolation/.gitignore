@@ -35,8 +35,8 @@ build/
 .vscode/
 
 ### docs ###
-.md
-.docx
+*.md
+*.docx
 
 ### model ###
-.py
+*.py
