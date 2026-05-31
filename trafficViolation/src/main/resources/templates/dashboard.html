@@ -422,11 +422,6 @@
 <script>
     // Quản lý State ảo của người dùng cho luồng tệp tin bất đồng bộ
     let currentUploadType = 'IMAGE';
-    let userHistoryData = [
-        { id: 101, title: 'Vi phạm đè vạch Phố Huế', type: 'VIDEO', date: '2026-05-18 14:20', status: 'DONE' },
-        { id: 102, title: 'Báo cáo lỗi Ngã Tư Sở', type: 'IMAGE', date: '2026-05-19 09:12', status: 'PROCESSING' },
-        { id: 104, title: 'Nghi vấn không đội mũ Khuất Duy Tiến', type: 'IMAGE', date: '2026-05-15 10:05', status: 'DONE' }
-    ];
 
     // 1. Chuyển đổi tab động menu trái
     function switchTab(tabName) {
@@ -495,28 +490,61 @@
         event.preventDefault();
         const title = document.getElementById('upload-title').value;
         const fileInput = document.getElementById('main-file-input');
+        const submitBtn = event.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
 
         if (!fileInput.files || fileInput.files.length === 0) {
             alert("Vui lòng tải lên tệp tin đính kèm trước khi gửi.");
             return;
         }
 
-        // Mock tạo tác vụ bất đồng bộ xếp hàng xử lý ngầm (QUEUED)
-        const newReport = {
-            id: Math.floor(100 + Math.random() * 900),
-            title: title,
-            type: currentUploadType,
-            date: '2026-05-19 10:22', // Mock thời gian thực tế hiện tại
-            status: 'QUEUED'
-        };
+        // Disable button and show loading
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải lên...';
 
-        userHistoryData.unshift(newReport); // Đẩy lên đầu danh sách lịch sử
-        alert(`Tải tệp lên thành công! Báo cáo mã số #RP-${newReport.id} đã được đưa vào hàng đợi xử lý ngầm (Asynchronous Queue).`);
+        // Upload file
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
 
-        // Reset form và chuyển về tab lịch sử xem tiến độ
-        document.getElementById('report-upload-form').reset();
-        selectUploadType('IMAGE');
-        switchTab('history');
+        // Determine upload type
+        const uploadType = currentUploadType === 'IMAGE' ? 'image' : 'video';
+
+        fetch(`/api/upload/${uploadType}`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Upload failed');
+            return response.json();
+        })
+        .then(data => {
+            const sessionId = data.sessionId;
+            
+            // Now process the upload
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang xử lý AI...';
+            return fetch(`/api/upload/${sessionId}/process`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            }).then(res => res.text()).then(text => {
+                return { sessionId, processResult: text };
+            });
+        })
+        .then(result => {
+            alert(`✅ Tải tệp lên và xử lý thành công! Báo cáo mã số #RP-${result.sessionId} đã hoàn thành.`);
+
+            // Reset form và chuyển về tab lịch sử
+            document.getElementById('report-upload-form').reset();
+            selectUploadType('IMAGE');
+            switchTab('history');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert(`❌ Lỗi: ${error.message}. Vui lòng thử lại.`);
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        });
     }
 
     // 5. Kết xuất bảng lịch sử tác vụ phân tích AI
@@ -524,44 +552,82 @@
         const tbody = document.getElementById('history-table-body');
         tbody.innerHTML = '';
 
-        userHistoryData.forEach(task => {
-            let statusBadge = '';
-            let actionBtn = '';
+        // Load from server if available
+        fetch('/api/upload/list')
+            .then(r => r.json())
+            .then(sessions => {
+                if (!sessions || sessions.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">Không có báo cáo nào</td></tr>';
+                    return;
+                }
 
-            // Gán badge tiến độ tương ứng
-            if (task.status === 'QUEUED') {
-                statusBadge = `<span class="status-task task-queued">Đang xếp hàng</span>`;
-                actionBtn = `<button class="btn btn-sm btn-light rounded-xl-custom text-muted" disabled>Chờ xử lý</button>`;
-            } else if (task.status === 'PROCESSING') {
-                statusBadge = `<span class="status-task task-processing">AI đang phân tích</span>`;
-                actionBtn = `<button class="btn btn-sm btn-light rounded-xl-custom text-muted" disabled><i class="fa-solid fa-spinner fa-spin me-1"></i>Loading</button>`;
-            } else if (task.status === 'DONE') {
-                statusBadge = `<span class="status-task task-done">Hoàn thành</span>`;
-                actionBtn = `<button class="btn btn-secondary-custom btn-sm rounded-xl-custom px-3" onclick="viewTaskResult(${task.id})"><i class="fa-regular fa-eye me-1"></i>Xem kết quả</button>`;
-            } else {
-                statusBadge = `<span class="status-task task-failed">Thất bại</span>`;
-                actionBtn = `<button class="btn btn-sm btn-light rounded-xl-custom text-danger" disabled>Lỗi tệp</button>`;
-            }
+                sessions.forEach(session => {
+                    let statusBadge = '';
+                    let actionBtn = '';
 
-            const fileIcon = task.type === 'VIDEO' ? '<i class="fa-regular fa-file-video text-primary me-2"></i>' : '<i class="fa-regular fa-image text-info me-2"></i>';
+                    // Gán badge tiến độ tương ứng
+                    if (session.status === 'PROCESSING') {
+                        statusBadge = `<span class="status-task task-processing">AI đang phân tích</span>`;
+                        actionBtn = `<button class="btn btn-sm btn-light rounded-xl-custom text-muted" disabled><i class="fa-solid fa-spinner fa-spin me-1"></i>Loading</button>`;
+                    } else if (session.status === 'AI_PROCESSED') {
+                        statusBadge = `<span class="status-task task-done">Hoàn thành</span>`;
+                        actionBtn = `<button class="btn btn-secondary-custom btn-sm rounded-xl-custom px-3" onclick="viewTaskResult(${session.id})"><i class="fa-regular fa-eye me-1"></i>Xem kết quả</button>`;
+                    } else if (session.status === 'FEEDBACKING') {
+                        statusBadge = `<span class="status-task task-processing">Chờ phản hồi</span>`;
+                        actionBtn = `<button class="btn btn-info btn-sm rounded-xl-custom px-3" disabled>Chờ xử lý</button>`;
+                    } else if (session.status === 'FINALIZED') {
+                        statusBadge = `<span class="status-task task-done">Hoàn tất</span>`;
+                        actionBtn = `<button class="btn btn-success btn-sm rounded-xl-custom px-3" disabled>Xong</button>`;
+                    } else {
+                        statusBadge = `<span class="status-task task-queued">Đang xếp hàng</span>`;
+                        actionBtn = `<button class="btn btn-sm btn-light rounded-xl-custom text-muted" disabled>Chờ xử lý</button>`;
+                    }
 
-            const row = document.createElement('tr');
-            row.className = 'border-bottom';
-            row.innerHTML = `
-                    <td class="px-4 py-3 fw-bold text-dark">#RP-${task.id}</td>
-                    <td class="px-4 py-3 fw-medium text-dark">${task.title}</td>
-                    <td class="px-4 py-3 text-secondary">${fileIcon}${task.type}</td>
-                    <td class="px-4 py-3 text-secondary" style="font-size: 0.825rem;">${task.date}</td>
-                    <td class="px-4 py-3">${statusBadge}</td>
-                    <td class="px-4 py-3 text-end">${actionBtn}</td>
-                `;
-            tbody.appendChild(row);
-        });
+                    const fileIcon = session.uploadType === 'VIDEO' ? '<i class="fa-regular fa-file-video text-primary me-2"></i>' : '<i class="fa-regular fa-image text-info me-2"></i>';
+                    const createdAt = new Date(session.createdAt).toLocaleString('vi-VN');
+
+                    const row = document.createElement('tr');
+                    row.className = 'border-bottom';
+                    row.innerHTML = `
+                        <td class="px-4 py-3 fw-bold text-dark">#RP-${session.id}</td>
+                        <td class="px-4 py-3 fw-medium text-dark">Báo cáo ${session.id}</td>
+                        <td class="px-4 py-3 text-secondary">${fileIcon}${session.uploadType}</td>
+                        <td class="px-4 py-3 text-secondary" style="font-size: 0.825rem;">${createdAt}</td>
+                        <td class="px-4 py-3">${statusBadge}</td>
+                        <td class="px-4 py-3 text-end">${actionBtn}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            })
+            .catch(err => {
+                console.error('Error loading sessions:', err);
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-danger">Lỗi tải dữ liệu</td></tr>';
+            });
     }
 
     // 6. Xử lý nút xem chi tiết kết quả khi trạng thái là DONE
     function viewTaskResult(reportId) {
-        alert(`Hệ thống đang tải trình phát video/ảnh kết quả cho biên bản #RP-${reportId}. Đang trích xuất dữ liệu đa nhãn...`);
+        fetch(`/api/upload/${reportId}/result`)
+            .then(response => response.ok ? response.json() : Promise.reject('Not found'))
+            .then(data => {
+                // Create a modal or new window to show results
+                let resultContent = `<strong>Kết quả xử lý báo cáo #RP-${reportId}:</strong><br>`;
+                if (data.objects && data.objects.length > 0) {
+                    data.objects.forEach((obj, idx) => {
+                        resultContent += `<br>📍 Đối tượng ${idx + 1}:<br>`;
+                        resultContent += `  - ID: ${obj.object_id}<br>`;
+                        resultContent += `  - Lỗi: ${obj.violation_types.join(', ') || 'Bình thường'}<br>`;
+                        resultContent += `  - Độ tin cậy: ${(obj.confidence * 100).toFixed(1)}%<br>`;
+                    });
+                } else {
+                    resultContent += '<br>✅ Không phát hiện lỗi';
+                }
+                resultContent += `<br><br>📸 Ảnh xử lý: <a href="${data.processed_url}" target="_blank">Xem ảnh</a>`;
+                alert(resultContent);
+            })
+            .catch(error => {
+                alert('Không thể tải kết quả. Hệ thống có thể vẫn đang xử lý.');
+            });
     }
 
     // 7. Tạo mới một đơn khiếu nại (Ràng buộc 1:1)
@@ -570,9 +636,76 @@
         const reportId = document.getElementById('appeal-report-id').value;
         const message = document.getElementById('appeal-message').value;
 
-        alert(`Nộp đơn khiếu nại thành công cho biên bản số #RP-${reportId}. Hồ sơ đã chuyển sang trạng thái chờ Cơ quan thẩm quyền phê duyệt đảo ngược.`);
-        document.getElementById('appeal-form').reset();
-        switchTab('create');
+        if (!reportId || !message) {
+            alert("Vui lòng điền đầy đủ thông tin khiếu nại.");
+            return;
+        }
+
+        const submitBtn = event.target.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang gửi...';
+
+        fetch(`/api/feedback`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                uploadSessionId: reportId,
+                feedbackContent: message
+            })
+        })
+        .then(r => r.ok ? r.json() : Promise.reject('Submit failed'))
+        .then(data => {
+            alert(`✅ Nộp đơn khiếu nại thành công cho biên bản số #RP-${reportId}. Hồ sơ đã chuyển sang trạng thái chờ Cơ quan thẩm quyền phê duyệt đảo ngược.`);
+            document.getElementById('appeal-form').reset();
+            switchTab('create');
+        })
+        .catch(err => {
+            alert(`❌ Lỗi: ${err}. Vui lòng thử lại.`);
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Nộp đơn khiếu nại';
+        });
+    }
+    // Listen for tab changes to populate appeal form
+    const originalSwitchTab = switchTab;
+    switchTab = function(tabName) {
+        originalSwitchTab(tabName);
+        if (tabName === 'appeal') {
+            populateAppealSessionList();
+        }
+    };
+
+    // Populate session IDs in appeal form dropdown
+    function populateAppealSessionList() {
+        const selectElement = document.getElementById('appeal-report-id');
+        
+        fetch('/api/upload/list')
+            .then(r => r.ok ? r.json() : [])
+            .then(sessions => {
+                // Clear existing options except the first one
+                selectElement.innerHTML = '<option value="" disabled selected hidden>Chọn từ danh sách báo cáo của bạn</option>';
+                
+                if (sessions.length === 0) {
+                    selectElement.innerHTML += '<option disabled>Chưa có báo cáo nào</option>';
+                    return;
+                }
+                
+                // Add session options
+                sessions.forEach(session => {
+                    const option = document.createElement('option');
+                    option.value = session.id;
+                    const mediaInfo = session.mediaFiles && session.mediaFiles.length > 0 
+                        ? session.mediaFiles[0].originalUrl.split('/').pop() 
+                        : 'Unknown file';
+                    option.textContent = `#RP-${session.id} (${mediaInfo}) - ${session.status}`;
+                    selectElement.appendChild(option);
+                });
+            })
+            .catch(err => {
+                console.error('Error loading sessions:', err);
+                selectElement.innerHTML = '<option disabled>Lỗi tải danh sách báo cáo</option>';
+            });
     }
 
 </script>

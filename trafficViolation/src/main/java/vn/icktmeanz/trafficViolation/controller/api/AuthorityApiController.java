@@ -1,12 +1,10 @@
 package vn.icktmeanz.trafficViolation.controller.api;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import vn.icktmeanz.trafficViolation.constant.UploadType;
 import vn.icktmeanz.trafficViolation.dto.response.UploadSessionResponse;
@@ -23,6 +21,12 @@ public class AuthorityApiController {
     public ResponseEntity<UploadSessionResponse> upload(
             @RequestParam("uploadType") UploadType uploadType,
             @RequestParam("files") MultipartFile[] files) {
-        return ResponseEntity.ok(uploadService.upload(uploadType, files));
+        return ResponseEntity.status(HttpStatus.CREATED).body(uploadService.upload(uploadType, files));
+    }
+
+    @PostMapping("/process/{sessionId}")
+    public ResponseEntity<String> processUploadedFiles(@PathVariable Long sessionId) {
+        uploadService.processUploadedFiles(sessionId);
+        return ResponseEntity.ok("Files processed successfully");
     }
 }

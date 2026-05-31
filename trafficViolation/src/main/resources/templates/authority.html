@@ -637,7 +637,18 @@
     }
 
     function loadResultDetail(id) {
-        console.log('Load detail for upload:', id);
+        // Fetch upload session and detected violations
+        fetch(`/api/upload/${id}/detail`)
+            .then(response => response.ok ? response.json() : Promise.reject('Not found'))
+            .then(data => {
+                // Display results in the detail panel
+                console.log('Upload detail:', data);
+                alert(`Session #${id} loaded. Total violations: ${data.objects ? data.objects.length : 0}`);
+            })
+            .catch(error => {
+                console.error('Load detail error:', error);
+                alert('Unable to load session details. Session may not have been processed yet.');
+            });
     }
 
     function onUploadTypeChange() {
@@ -738,12 +749,6 @@
             return;
         }
 
-        const formData = new FormData();
-        formData.append('uploadType', uploadType);
-        for (const file of files) {
-            formData.append('files', file);
-        }
-
         const submitBtn = document.getElementById('submitUploadBtn');
         const spinner = document.getElementById('submitBtnSpinner');
         const btnText = document.getElementById('submitBtnText');
@@ -753,32 +758,195 @@
         btnText.textContent = 'Uploading...';
 
         try {
-            const response = await fetch('/authority/api/upload', {
+            // Determine API endpoint based on upload type
+            let endpoint = '';
+            const formData = new FormData();
+
+            if (uploadType === 'SINGLE_IMAGE') {
+                endpoint = '/api/upload/image';
+                formData.append('file', files[0]);
+            } else if (uploadType === 'VIDEO') {
+                endpoint = '/api/upload/video';
+                formData.append('file', files[0]);
+            } else if (uploadType === 'FOLDER') {
+                endpoint = '/api/upload/folder';
+                for (const file of files) {
+                    formData.append('files', file);
+                }
+            }
+
+            // Step 1: Upload files
+            btnText.textContent = 'Uploading...';
+            const uploadResponse = await fetch(endpoint, {
                 method: 'POST',
                 body: formData,
                 credentials: 'same-origin'
             });
 
-            const data = await response.json().catch(() => ({}));
-
-            if (!response.ok) {
-                showError(data.message || 'Upload failed. Please try again.');
+            if (!uploadResponse.ok) {
+                const errorData = await uploadResponse.json().catch(() => ({}));
+                showError(errorData.message || 'Upload failed. Please try again.');
                 return;
             }
 
-            const fileCount = data.mediaFiles ? data.mediaFiles.length : 0;
+            const uploadData = await uploadResponse.json();
+            const sessionId = uploadData.sessionId;
+            const fileCount = uploadData.mediaFiles ? uploadData.mediaFiles.length : 0;
+
+            // Step 2: Process files with AI
+            btnText.textContent = 'Processing with AI...';
+            const processResponse = await fetch(`/api/upload/${sessionId}/process`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin'
+            });
+
+            if (!processResponse.ok) {
+                showError('AI processing failed. Please try again.');
+                return;
+            }
+
             showSuccess(
-                `Upload successful! Session #${data.sessionId} — ${fileCount} file(s) saved locally. Status: ${data.status}`
+                `✅ Upload & Processing successful! Session #${sessionId} — ${fileCount} file(s) processed. Status: AI_PROCESSED`
             );
+            
             fileInput.value = '';
             selectedFilesEl.textContent = '';
+            
+            // Optionally switch to result tab
+            setTimeout(() => switchTab('result'), 1500);
+
         } catch (err) {
+            console.error('Error:', err);
             showError('Network error: ' + err.message);
         } finally {
             submitBtn.disabled = false;
             spinner.classList.add('d-none');
             btnText.textContent = 'Submit to AI Service';
         }
+    }
+
+    // Load feedback and statistics when switching tabs
+    switchTab('upload');
+    
+    // Auto-load feedback when switching to feedback tab
+    const originalSwitchTab = switchTab;
+    switchTab = function(tabName) {
+        originalSwitchTab(tabName);
+        if (tabName === 'feedback') {
+            loadPendingFeedback();
+        } else if (tabName === 'statistic') {
+            loadMonthlyStatistics();
+        }
+    };
+
+    // Load pending feedback from API
+    function loadPendingFeedback() {
+        fetch('/api/feedback/pending/all')
+            .then(r => r.ok ? r.json() : [])
+            .then(feedbacks => {
+                const feedbackTable = document.querySelector('#section-feedback table tbody');
+                if (!feedbackTable) return;
+                
+                if (feedbacks.length === 0) {
+                    feedbackTable.innerHTML = '<tr><td colspan="5" class="text-center py-4">No pending feedback</td></tr>';
+                    return;
+                }
+                
+                feedbackTable.innerHTML = feedbacks.map(fb => `
+                    <tr>
+                        <td class="px-4 py-3">#RP-${fb.uploadSessionId}</td>
+                        <td class="px-4 py-3">${fb.userFullName} (${fb.userPhone})</td>
+                        <td class="px-4 py-3">${fb.description.substring(0, 50)}...</td>
+                        <td class="px-4 py-3">
+                            <span class="badge bg-warning text-dark">${fb.status}</span>
+                        </td>
+                        <td class="px-4 py-3 text-end">
+                            <button class="btn btn-success btn-sm rounded-xl-custom me-2" onclick="approveFeedback(${fb.id})">
+                                Approve
+                            </button>
+                            <button class="btn btn-danger btn-sm rounded-xl-custom" onclick="rejectFeedback(${fb.id})">
+                                Reject
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            })
+            .catch(err => console.error('Error loading feedback:', err));
+    }
+
+    // Approve feedback
+    function approveFeedback(feedbackId) {
+        if (confirm('Approve this feedback and mark corrections as done?')) {
+            fetch(`/api/feedback/${feedbackId}/approve`, { method: 'PUT' })
+                .then(r => r.ok ? r.json() : Promise.reject())
+                .then(() => {
+                    alert('✅ Feedback approved');
+                    loadPendingFeedback();
+                })
+                .catch(() => alert('❌ Error approving feedback'));
+        }
+    }
+
+    // Reject feedback
+    function rejectFeedback(feedbackId) {
+        if (confirm('Reject this feedback? The detection result was correct.')) {
+            fetch(`/api/feedback/${feedbackId}/reject`, { method: 'PUT' })
+                .then(r => r.ok ? r.json() : Promise.reject())
+                .then(() => {
+                    alert('✅ Feedback rejected');
+                    loadPendingFeedback();
+                })
+                .catch(() => alert('❌ Error rejecting feedback'));
+        }
+    }
+
+    // Load monthly statistics from API
+    function loadMonthlyStatistics() {
+        fetch('/api/statistics/all')
+            .then(r => r.ok ? r.json() : [])
+            .then(stats => {
+                const statsTable = document.querySelector('#section-statistic table tbody');
+                if (!statsTable) return;
+                
+                if (stats.length === 0) {
+                    // Calculate for current month
+                    const now = new Date();
+                    calculateStatistics(now.getMonth() + 1, now.getFullYear());
+                    return;
+                }
+                
+                statsTable.innerHTML = stats.map(s => `
+                    <tr>
+                        <td class="px-4 py-3 fw-semibold">${String(s.month).padStart(2, '0')} / ${s.year}</td>
+                        <td class="px-4 py-3">${s.totalReports}</td>
+                        <td class="px-4 py-3 text-danger fw-semibold">${s.noHelmetCount}</td>
+                        <td class="px-4 py-3 text-warning fw-semibold">${s.usingPhoneCount}</td>
+                        <td class="px-4 py-3 text-primary fw-semibold">${s.tripleRidingCount}</td>
+                        <td class="px-4 py-3 text-success fw-semibold">${s.approvedReports}</td>
+                    </tr>
+                `).join('');
+                
+                // Update summary cards
+                if (stats.length > 0) {
+                    const latest = stats[0];
+                    document.querySelectorAll('[data-stat]').forEach(el => {
+                        if (el.dataset.stat === 'totalUploads') el.textContent = latest.totalReports;
+                        if (el.dataset.stat === 'noHelmet') el.textContent = latest.noHelmetCount;
+                        if (el.dataset.stat === 'usingPhone') el.textContent = latest.usingPhoneCount;
+                        if (el.dataset.stat === 'tripleRiding') el.textContent = latest.tripleRidingCount;
+                    });
+                }
+            })
+            .catch(err => console.error('Error loading statistics:', err));
+    }
+
+    // Calculate statistics for a specific month
+    function calculateStatistics(month, year) {
+        fetch(`/api/statistics/calculate/${month}/${year}`, { method: 'POST' })
+            .then(r => r.ok ? r.json() : Promise.reject())
+            .then(() => loadMonthlyStatistics())
+            .catch(() => console.log('Statistics calculation not available yet'));
     }
 
     onUploadTypeChange();

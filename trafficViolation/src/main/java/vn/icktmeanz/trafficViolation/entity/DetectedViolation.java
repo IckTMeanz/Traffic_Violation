@@ -3,11 +3,14 @@ package vn.icktmeanz.trafficViolation.entity;
 import io.hypersistence.utils.hibernate.type.array.ListArrayType;
 import jakarta.persistence.*;
 import lombok.*;
+
 import org.hibernate.annotations.Type;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import io.hypersistence.utils.hibernate.type.json.JsonType;
 
 @Entity
 @Table(name = "detected_violations")
@@ -36,6 +39,7 @@ public class DetectedViolation {
 
     // Lưu chuỗi cấu trúc JSON tọa độ bounding box: {"xmin":10, "ymin":20, ...}
     @Column(name = "bounding_box", columnDefinition = "jsonb", nullable = false)
+    @Type(JsonType.class)
     private String boundingBox;
 
     @Column(name = "confidence")

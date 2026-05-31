@@ -41,4 +41,12 @@ public class Feedback {
 
     @Column(name = "handled_at")
     private LocalDateTime handledAt;
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 }
