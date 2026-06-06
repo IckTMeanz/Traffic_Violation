@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="vi">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Data — Traffic Violation Detect</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" th:href="@{/style-aut.css}">
+</head>
+<body>
+
+<aside class="admin-sidebar-left">
+
+    <div>
+        <div class="brand-wrapper">
+            <div class="system-logo rounded-xl-custom">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <span class="brand-title fw-bold fs-5">Traffic Detect</span>
+        </div>
+
+        <nav>
+            <ul class="nav-menu-list">
+
+                <li>
+                    <a href="/authority/" class="sidebar-menu-btn active">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <span class="menu-text">Upload data</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="/authority/result" class="sidebar-menu-btn">
+                        <i class="fa-solid fa-magnifying-glass-chart"></i>
+                        <span class="menu-text">Check result</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="/authority/feedback" class="sidebar-menu-btn">
+                        <i class="fa-solid fa-comments"></i>
+                        <span class="menu-text">Review feedback</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="/authority/statistic" class="sidebar-menu-btn">
+                        <i class="fa-solid fa-chart-column"></i>
+                        <span class="menu-text">See monthly statistic</span>
+                    </a>
+                </li>
+
+            </ul>
+        </nav>
+    </div>
+
+    <form action="/logout" method="post">
+        <button type="submit" class="sidebar-menu-btn text-danger">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span class="menu-text">Sign out</span>
+        </button>
+    </form>
+
+</aside>
+
+<main class="main-dashboard-content">
+
+    <header class="d-flex align-items-center justify-content-between bg-white rounded-2xl-custom border p-3 mb-4 shadow-sm">
+        <div>
+            <h1 class="h5 fw-bold mb-1">Authority Dashboard</h1>
+            <div class="text-secondary small">Traffic Violation Detection Management System</div>
+        </div>
+
+        <div class="text-secondary">
+            <i class="fa-regular fa-user-circle me-1"></i>
+            Authority Officer
+        </div>
+    </header>
+
+    <section class="fade-in-section">
+
+        <div class="mb-4">
+            <h2 class="fw-bold">Upload data</h2>
+            <p class="text-secondary mb-0">
+                Upload image, image folder or video for AI traffic violation detection.
+            </p>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-2xl-custom p-4">
+
+            <div class="row g-4 mb-4">
+                <div class="col-12">
+                    <label for="uploadType" class="form-label fw-semibold mb-3">Upload type</label>
+                    <select id="uploadType" class="form-select rounded-xl-custom py-3" onchange="onUploadTypeChange()">
+                        <option value="SINGLE_IMAGE">Single image</option>
+                        <option value="FOLDER">Folder images</option>
+                        <option value="VIDEO">Video</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="uploadZone" class="upload-zone mb-4">
+                <i class="fa-solid fa-cloud-arrow-up fa-3x text-primary mb-3"></i>
+                <h5 class="fw-bold">Drag &amp; Drop files here</h5>
+                <p id="uploadHint" class="text-secondary mb-4">
+                    Select one image (JPG, PNG, WEBP).
+                </p>
+
+                <input type="file" id="fileInput" class="form-control mb-3 py-3" accept="image/jpeg,image/png,image/webp">
+
+                <div id="selectedFiles" class="text-start small text-secondary mb-3"></div>
+
+                <button type="button" id="submitUploadBtn" class="btn btn-primary-custom rounded-xl-custom px-4 py-2" onclick="submitUpload()">
+                    <span id="submitBtnText">Submit to AI Service</span>
+                    <span id="submitBtnSpinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status"></span>
+                </button>
+            </div>
+
+            <div id="uploadSuccessAlert" class="alert alert-success rounded-xl-custom border-0 d-none mb-3"></div>
+            <div id="uploadErrorAlert" class="alert alert-danger rounded-xl-custom border-0 d-none mb-3"></div>
+
+            <div class="alert alert-primary rounded-xl-custom border-0 mb-0">
+                <i class="fa-solid fa-circle-info me-2"></i>
+                Files are saved locally:
+                <code>.../storage/image</code>, <code>.../storage/folder</code>, or <code>.../storage/video</code>
+                (see <code>application.properties</code>).
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    const uploadZone = document.getElementById('uploadZone');
+    const fileInput = document.getElementById('fileInput');
+    const uploadTypeSelect = document.getElementById('uploadType');
+    const uploadHint = document.getElementById('uploadHint');
+    const selectedFilesEl = document.getElementById('selectedFiles');
+    const uploadSuccessAlert = document.getElementById('uploadSuccessAlert');
+    const uploadErrorAlert = document.getElementById('uploadErrorAlert');
+
+    function onUploadTypeChange() {
+        const type = uploadTypeSelect.value;
+        fileInput.value = '';
+        selectedFilesEl.textContent = '';
+        hideAlerts();
+
+        fileInput.removeAttribute('multiple');
+        fileInput.removeAttribute('webkitdirectory');
+        fileInput.removeAttribute('directory');
+
+        if (type === 'SINGLE_IMAGE') {
+            uploadHint.textContent = 'Select exactly one image (JPG, PNG, WEBP).';
+            fileInput.accept = 'image/jpeg,image/png,image/webp';
+        } else if (type === 'FOLDER') {
+            uploadHint.textContent = 'Select a folder containing images (JPG, PNG, WEBP).';
+            fileInput.accept = 'image/jpeg,image/png,image/webp';
+            fileInput.setAttribute('multiple', '');
+            fileInput.setAttribute('webkitdirectory', '');
+            fileInput.setAttribute('directory', '');
+        } else {
+            uploadHint.textContent = 'Select exactly one video (MP4, MOV, AVI, MKV).';
+            fileInput.accept = 'video/mp4,video/quicktime,video/x-msvideo,video/x-matroska';
+        }
+    }
+
+    function hideAlerts() {
+        uploadSuccessAlert.classList.add('d-none');
+        uploadErrorAlert.classList.add('d-none');
+    }
+
+    function showError(message) {
+        uploadErrorAlert.textContent = message;
+        uploadErrorAlert.classList.remove('d-none');
+        uploadSuccessAlert.classList.add('d-none');
+    }
+
+    function showSuccess(message) {
+        uploadSuccessAlert.textContent = message;
+        uploadSuccessAlert.classList.remove('d-none');
+        uploadErrorAlert.classList.add('d-none');
+    }
+
+    function renderSelectedFiles() {
+        const files = fileInput.files;
+        if (!files || files.length === 0) {
+            selectedFilesEl.textContent = '';
+            return;
+        }
+        const names = Array.from(files).map(f => f.name).join(', ');
+        selectedFilesEl.textContent = `${files.length} file(s): ${names}`;
+    }
+
+    fileInput.addEventListener('change', renderSelectedFiles);
+
+    uploadZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadZone.style.borderColor = 'var(--primary)';
+    });
+
+    uploadZone.addEventListener('dragleave', () => {
+        uploadZone.style.borderColor = '#CBD5E1';
+    });
+
+    uploadZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadZone.style.borderColor = '#CBD5E1';
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            fileInput.files = e.dataTransfer.files;
+            renderSelectedFiles();
+        }
+    });
+
+    async function submitUpload() {
+        hideAlerts();
+
+        const uploadType = uploadTypeSelect.value;
+        const files = fileInput.files;
+
+        if (!files || files.length === 0) {
+            showError('Please select file(s) to upload.');
+            return;
+        }
+
+        if (uploadType === 'SINGLE_IMAGE' && files.length !== 1) {
+            showError('Single image upload requires exactly one file.');
+            return;
+        }
+
+        if (uploadType === 'VIDEO' && files.length !== 1) {
+            showError('Video upload requires exactly one file.');
+            return;
+        }
+
+        if (uploadType === 'FOLDER' && files.length < 1) {
+            showError('Folder upload requires at least one image.');
+            return;
+        }
+
+        const submitBtn = document.getElementById('submitUploadBtn');
+        const spinner = document.getElementById('submitBtnSpinner');
+        const btnText = document.getElementById('submitBtnText');
+
+        submitBtn.disabled = true;
+        spinner.classList.remove('d-none');
+        btnText.textContent = 'Uploading...';
+
+        try {
+            let endpoint = '';
+            const formData = new FormData();
+
+            if (uploadType === 'SINGLE_IMAGE') {
+                endpoint = '/api/upload/image';
+                formData.append('file', files[0]);
+            } else if (uploadType === 'VIDEO') {
+                endpoint = '/api/upload/video';
+                formData.append('file', files[0]);
+            } else if (uploadType === 'FOLDER') {
+                endpoint = '/api/upload/folder';
+                for (const file of files) {
+                    formData.append('files', file);
+                }
+            }
+
+            btnText.textContent = 'Uploading...';
+            const uploadResponse = await fetch(endpoint, {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin'
+            });
+
+            if (!uploadResponse.ok) {
+                const errorData = await uploadResponse.json().catch(() => ({}));
+                showError(errorData.message || 'Upload failed. Please try again.');
+                return;
+            }
+
+            const uploadData = await uploadResponse.json();
+            const sessionId = uploadData.sessionId;
+            const fileCount = uploadData.mediaFiles ? uploadData.mediaFiles.length : 0;
+
+            btnText.textContent = 'Processing with AI...';
+            const processResponse = await fetch(`/api/upload/${sessionId}/process`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin'
+            });
+
+            if (!processResponse.ok) {
+                showError('AI processing failed. Please try again.');
+                return;
+            }
+
+            showSuccess(
+                `✅ Upload & Processing successful! Session #${sessionId} — ${fileCount} file(s) processed. Status: AI_PROCESSED`
+            );
+
+            fileInput.value = '';
+            selectedFilesEl.textContent = '';
+
+            setTimeout(() => window.location.href = '/authority/result', 1500);
+
+        } catch (err) {
+            console.error('Error:', err);
+            showError('Network error: ' + err.message);
+        } finally {
+            submitBtn.disabled = false;
+            spinner.classList.add('d-none');
+            btnText.textContent = 'Submit to AI Service';
+        }
+    }
+
+    onUploadTypeChange();
+</script>
+
+</body>
+</html>

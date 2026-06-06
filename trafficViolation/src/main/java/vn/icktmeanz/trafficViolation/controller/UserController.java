@@ -12,11 +12,6 @@ public class UserController {
         return "admin2";
     }
 
-    @GetMapping("/authority")
-    public String author() {
-        return "authority";
-    }
-
     @GetMapping("/user")
     public String user() {
         return "dashboard";

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="vi">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Statistic — Traffic Violation Detect</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" th:href="@{/style-aut.css}">
+</head>
+<body>
+
+<aside class="admin-sidebar-left">
+
+    <div>
+        <div class="brand-wrapper">
+            <div class="system-logo rounded-xl-custom">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <span class="brand-title fw-bold fs-5">Traffic Detect</span>
+        </div>
+
+        <nav>
+            <ul class="nav-menu-list">
+
+                <li>
+                    <a href="/authority/upload" class="sidebar-menu-btn">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <span class="menu-text">Upload data</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="/authority/result" class="sidebar-menu-btn">
+                        <i class="fa-solid fa-magnifying-glass-chart"></i>
+                        <span class="menu-text">Check result</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="/authority/feedback" class="sidebar-menu-btn">
+                        <i class="fa-solid fa-comments"></i>
+                        <span class="menu-text">Review feedback</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="/authority/statistic" class="sidebar-menu-btn active">
+                        <i class="fa-solid fa-chart-column"></i>
+                        <span class="menu-text">See monthly statistic</span>
+                    </a>
+                </li>
+
+            </ul>
+        </nav>
+    </div>
+
+    <form action="/logout" method="post">
+        <button type="submit" class="sidebar-menu-btn text-danger">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span class="menu-text">Sign out</span>
+        </button>
+    </form>
+
+</aside>
+
+<main class="main-dashboard-content">
+
+    <header class="d-flex align-items-center justify-content-between bg-white rounded-2xl-custom border p-3 mb-4 shadow-sm">
+        <div>
+            <h1 class="h5 fw-bold mb-1">Authority Dashboard</h1>
+            <div class="text-secondary small">Traffic Violation Detection Management System</div>
+        </div>
+
+        <div class="text-secondary">
+            <i class="fa-regular fa-user-circle me-1"></i>
+            Authority Officer
+        </div>
+    </header>
+
+    <section class="fade-in-section">
+
+        <div class="mb-4">
+            <h2 class="fw-bold">See monthly statistic</h2>
+            <p class="text-secondary mb-0">
+                Monitor traffic violation trends and authority review performance.
+            </p>
+        </div>
+
+        <div class="row g-4 mb-4">
+
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm rounded-2xl-custom p-4">
+                    <div class="text-secondary small mb-2">Total Uploads</div>
+                    <div class="display-6 fw-bold" data-stat="totalUploads">1,248</div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm rounded-2xl-custom p-4">
+                    <div class="text-secondary small mb-2">No Helmet</div>
+                    <div class="display-6 fw-bold text-danger" data-stat="noHelmet">642</div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm rounded-2xl-custom p-4">
+                    <div class="text-secondary small mb-2">Using Mobile</div>
+                    <div class="display-6 fw-bold text-warning" data-stat="usingPhone">318</div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm rounded-2xl-custom p-4">
+                    <div class="text-secondary small mb-2">Approved Accuracy</div>
+                    <div class="display-6 fw-bold text-success" data-stat="accuracy">94.6%</div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-2xl-custom overflow-hidden">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle mb-0">
+
+                    <thead class="table-light">
+                    <tr>
+                        <th class="px-4 py-3">Month</th>
+                        <th class="px-4 py-3">Total Reports</th>
+                        <th class="px-4 py-3">No Helmet</th>
+                        <th class="px-4 py-3">Using Mobile</th>
+                        <th class="px-4 py-3">Triple Riding</th>
+                        <th class="px-4 py-3">Corrected By Authority</th>
+                    </tr>
+                    </thead>
+
+                    <tbody id="statisticsTableBody">
+                    <tr>
+                        <td class="px-4 py-3 fw-semibold">05 / 2026</td>
+                        <td class="px-4 py-3">412</td>
+                        <td class="px-4 py-3 text-danger fw-semibold">210</td>
+                        <td class="px-4 py-3 text-warning fw-semibold">95</td>
+                        <td class="px-4 py-3 text-primary fw-semibold">45</td>
+                        <td class="px-4 py-3 text-success fw-semibold">32</td>
+                    </tr>
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Load monthly statistics when page loads
+    function loadMonthlyStatistics() {
+        fetch('/api/statistics/all')
+            .then(r => r.ok ? r.json() : [])
+            .then(stats => {
+                const statsTable = document.getElementById('statisticsTableBody');
+
+                if (!stats || stats.length === 0) {
+                    // Calculate for current month if no stats available
+                    const now = new Date();
+                    calculateStatistics(now.getMonth() + 1, now.getFullYear());
+                    return;
+                }
+
+                // Sort by month descending (most recent first)
+                stats.sort((a, b) => {
+                    const dateA = new Date(a.year, a.month - 1);
+                    const dateB = new Date(b.year, b.month - 1);
+                    return dateB - dateA;
+                });
+
+                statsTable.innerHTML = stats.map(s => `
+                    <tr>
+                        <td class="px-4 py-3 fw-semibold">${String(s.month).padStart(2, '0')} / ${s.year}</td>
+                        <td class="px-4 py-3">${s.totalReports || 0}</td>
+                        <td class="px-4 py-3 text-danger fw-semibold">${s.noHelmetCount || 0}</td>
+                        <td class="px-4 py-3 text-warning fw-semibold">${s.usingPhoneCount || 0}</td>
+                        <td class="px-4 py-3 text-primary fw-semibold">${s.tripleRidingCount || 0}</td>
+                        <td class="px-4 py-3 text-success fw-semibold">${s.approvedReports || 0}</td>
+                    </tr>
+                `).join('');
+
+                // Update summary cards with latest month data
+                if (stats.length > 0) {
+                    const latest = stats[0];
+                    document.querySelector('[data-stat="totalUploads"]').textContent = latest.totalReports || '0';
+                    document.querySelector('[data-stat="noHelmet"]').textContent = latest.noHelmetCount || '0';
+                    document.querySelector('[data-stat="usingPhone"]').textContent = latest.usingPhoneCount || '0';
+
+                    // Calculate accuracy if data available
+                    if (latest.totalReports > 0) {
+                        const accuracy = ((latest.approvedReports / latest.totalReports) * 100).toFixed(1);
+                        document.querySelector('[data-stat="accuracy"]').textContent = accuracy + '%';
+                    }
+                }
+            })
+            .catch(err => {
+                console.error('Error loading statistics:', err);
+                document.getElementById('statisticsTableBody').innerHTML =
+                    '<tr><td colspan="6" class="text-center py-4 text-secondary">Loading statistics...</td></tr>';
+            });
+    }
+
+    // Calculate statistics for a specific month
+    function calculateStatistics(month, year) {
+        fetch(`/api/statistics/calculate/${month}/${year}`, {
+            method: 'POST',
+            credentials: 'same-origin'
+        })
+            .then(r => r.ok ? r.json() : Promise.reject())
+            .then(() => {
+                console.log('Statistics calculated');
+                loadMonthlyStatistics();
+            })
+            .catch(err => {
+                console.log('Statistics calculation not available yet:', err);
+                // Don't show error - just keep default data
+            });
+    }
+
+    // Load statistics when page loads
+    window.addEventListener('DOMContentLoaded', loadMonthlyStatistics);
+</script>
+
+</body>
+</html>

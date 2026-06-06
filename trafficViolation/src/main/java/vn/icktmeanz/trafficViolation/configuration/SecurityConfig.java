@@ -124,7 +124,7 @@ public class SecurityConfig {
             if (isAdmin) {
                 response.sendRedirect("/admin");
             } else if (isAuthority) {
-                response.sendRedirect("/authority");
+                response.sendRedirect("/authority/upload");
             } else if (isUser) {
                 response.sendRedirect("/user");
             } else {
