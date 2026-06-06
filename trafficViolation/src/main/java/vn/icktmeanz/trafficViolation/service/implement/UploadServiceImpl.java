@@ -322,4 +322,18 @@ public class UploadServiceImpl implements UploadService {
             throw new RuntimeException("Failed to save detected violation: " + e.getMessage(), e);
         }
     }
+
+    @Override
+    public List<UploadSessionResponse> findSessionByUser(User user) {
+        return uploadSessionRepository.findAllByUser(user)
+                .stream()
+                .map(session -> UploadSessionResponse.builder()
+                        .sessionId(session.getId())
+                        .uploadType(session.getUploadType())
+                        .status(session.getStatus())
+                        .createdAt(session.getCreatedAt())
+                        .build())
+                .toList();
+    }
+
 }

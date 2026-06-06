@@ -3,15 +3,20 @@ package vn.icktmeanz.trafficViolation.controller.api;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import vn.icktmeanz.trafficViolation.constant.UploadType;
 import vn.icktmeanz.trafficViolation.dto.response.UploadSessionResponse;
 import vn.icktmeanz.trafficViolation.dto.response.AIProcessingResultDTO;
 import vn.icktmeanz.trafficViolation.entity.UploadSession;
+import vn.icktmeanz.trafficViolation.entity.User;
 import vn.icktmeanz.trafficViolation.repository.UploadSessionRepository;
+import vn.icktmeanz.trafficViolation.repository.UserRepository;
 import vn.icktmeanz.trafficViolation.service.UploadService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/upload")
@@ -22,6 +27,7 @@ public class UploadApiController {
     private final UploadService uploadService;
     private final UploadSessionRepository uploadSessionRepository;
     private final ObjectMapper objectMapper;
+    private final UserRepository userRepository;
 
     /**
      * Upload a single image for processing
@@ -166,12 +172,18 @@ public class UploadApiController {
      * List all upload sessions for current user
      * @return list of upload sessions
      */
+    private User getCurrentUser() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalStateException("Authenticated user not found: " + username));
+    }
+
     @GetMapping("/list")
-    public ResponseEntity<?> listUploadSessions() {
+    public ResponseEntity<List<UploadSessionResponse>> listUploadSessions() {
         log.info("Received request to list upload sessions");
         try {
-            var sessions = uploadSessionRepository.findAll();
-            return ResponseEntity.ok(sessions);
+            List<UploadSessionResponse> uploadSessionResponses = this.uploadService.findSessionByUser(getCurrentUser());
+            return ResponseEntity.ok(uploadSessionResponses);
         } catch (Exception e) {
             log.error("Error listing upload sessions: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().build();

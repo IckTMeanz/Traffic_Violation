@@ -3,6 +3,9 @@ package vn.icktmeanz.trafficViolation.service;
 import org.springframework.web.multipart.MultipartFile;
 import vn.icktmeanz.trafficViolation.constant.UploadType;
 import vn.icktmeanz.trafficViolation.dto.response.UploadSessionResponse;
+import vn.icktmeanz.trafficViolation.entity.User;
+
+import java.util.List;
 
 public interface UploadService {
 
@@ -14,4 +17,7 @@ public interface UploadService {
      * For VIDEO: processes first detected frame only
      */
     void processUploadedFiles(Long sessionId);
+
+    List<UploadSessionResponse> findSessionByUser(User user);
+
 }

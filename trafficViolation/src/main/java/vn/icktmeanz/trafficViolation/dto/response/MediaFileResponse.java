@@ -9,4 +9,5 @@ public class MediaFileResponse {
     private Long id;
     private String originalUrl;
     private String aiStatus;
+    private String processedUrl;
 }
