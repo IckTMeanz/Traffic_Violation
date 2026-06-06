@@ -177,20 +177,27 @@
     }
 
     function hideAlerts() {
-        uploadSuccessAlert.classList.add('d-none');
-        uploadErrorAlert.classList.add('d-none');
+        if (uploadErrorAlert) uploadErrorAlert.classList.add('d-none');
     }
 
     function showError(message) {
         uploadErrorAlert.textContent = message;
         uploadErrorAlert.classList.remove('d-none');
-        uploadSuccessAlert.classList.add('d-none');
     }
 
     function showSuccess(message) {
-        uploadSuccessAlert.textContent = message;
-        uploadSuccessAlert.classList.remove('d-none');
-        uploadErrorAlert.classList.add('d-none');
+        // 1. Tạo phần tử div động ngoài bộ nhớ
+        const toast = document.createElement('div');
+        toast.className = 'success-toast-dynamic';
+        toast.innerHTML = message;
+
+        // 2. Bắn trực tiếp phần tử này vào body của trang web
+        document.body.appendChild(toast);
+
+        // 3. Dọn dẹp DOM: Xóa hoàn toàn thẻ div này sau 3 giây khi animation hoàn tất
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
     }
 
     function renderSelectedFiles() {
@@ -304,7 +311,7 @@
             }
 
             showSuccess(
-                `✅ Upload & Processing successful! Session #${sessionId} — ${fileCount} file(s) processed. Status: AI_PROCESSED`
+                `<i class="fa-solid fa-circle-check me-2"></i> Upload &amp; successful! Session #${sessionId} — ${fileCount} file(s) processing.`
             );
 
             fileInput.value = '';

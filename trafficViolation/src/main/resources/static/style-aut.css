@@ -216,3 +216,45 @@ body {
         padding: 24px;
     }
 }
+
+.success-toast-dynamic {
+    position: fixed;
+    top: 30px;
+    right: 30px;
+    background: rgba(22, 163, 74, 0.95); /* Màu xanh success của hệ thống */
+    border: 1px solid rgba(22, 163, 74, 0.4);
+    color: white;
+    font-weight: 500;
+    font-size: 0.9rem;
+    padding: 14px 22px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(22, 163, 74, 0.2);
+    z-index: 9999;
+
+    /* Chạy slideIn ngay, sau 2.5s thì chạy fadeOut và giữ lại trạng thái cuối (forwards) */
+    animation:
+            toastSlideIn 0.4s ease,
+            toastFadeOut 0.5s ease 2.5s forwards;
+}
+
+@keyframes toastSlideIn {
+    from {
+        transform: translateX(120%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes toastFadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+}
