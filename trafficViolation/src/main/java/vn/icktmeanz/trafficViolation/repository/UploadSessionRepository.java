@@ -11,4 +11,6 @@ public interface UploadSessionRepository extends JpaRepository<UploadSession, Lo
     List<UploadSession> findAllByUser(User user);
 
     List<UploadSession> findAllByUserAndStatus(User user, SessionStatus status);
+
+    List<UploadSession> findAllByStatus(SessionStatus status);
 }

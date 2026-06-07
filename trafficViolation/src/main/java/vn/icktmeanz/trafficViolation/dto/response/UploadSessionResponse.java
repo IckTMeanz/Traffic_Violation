@@ -17,4 +17,5 @@ public class UploadSessionResponse {
     private String videoUrl;
     private LocalDateTime createdAt;
     private List<MediaFileResponse> mediaFiles;
+    private Long user_id;
 }

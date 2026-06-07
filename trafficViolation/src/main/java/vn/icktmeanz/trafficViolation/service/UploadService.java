@@ -23,4 +23,8 @@ public interface UploadService {
 
     List<UploadSessionResponse> findSessionByStatus(SessionStatus status);
 
+    List<UploadSessionResponse> findSessionByStatusFB(SessionStatus status);
+
+    void updateSessionStatus(Long sessionId, SessionStatus status);
+
 }

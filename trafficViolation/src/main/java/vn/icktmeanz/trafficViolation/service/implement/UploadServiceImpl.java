@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import vn.icktmeanz.trafficViolation.constant.FeedbackStatus;
 import vn.icktmeanz.trafficViolation.constant.SessionStatus;
 import vn.icktmeanz.trafficViolation.constant.UploadType;
 import vn.icktmeanz.trafficViolation.dto.response.AIProcessingResultDTO;
@@ -24,14 +25,8 @@ import vn.icktmeanz.trafficViolation.dto.response.BoundingBoxDTO;
 import vn.icktmeanz.trafficViolation.dto.response.DetectedObjectDTO;
 import vn.icktmeanz.trafficViolation.dto.response.MediaFileResponse;
 import vn.icktmeanz.trafficViolation.dto.response.UploadSessionResponse;
-import vn.icktmeanz.trafficViolation.entity.DetectedViolation;
-import vn.icktmeanz.trafficViolation.entity.MediaFile;
-import vn.icktmeanz.trafficViolation.entity.UploadSession;
-import vn.icktmeanz.trafficViolation.entity.User;
-import vn.icktmeanz.trafficViolation.repository.DetectedViolationRepository;
-import vn.icktmeanz.trafficViolation.repository.MediaFileRepository;
-import vn.icktmeanz.trafficViolation.repository.UploadSessionRepository;
-import vn.icktmeanz.trafficViolation.repository.UserRepository;
+import vn.icktmeanz.trafficViolation.entity.*;
+import vn.icktmeanz.trafficViolation.repository.*;
 import vn.icktmeanz.trafficViolation.service.AIService;
 import vn.icktmeanz.trafficViolation.service.FileStorageService;
 import vn.icktmeanz.trafficViolation.service.UploadService;
@@ -51,6 +46,7 @@ public class UploadServiceImpl implements UploadService {
     private final FileStorageService fileStorageService;
     private final AIService aiService;
     private final ObjectMapper objectMapper;
+    private final FeedbackRepository feedbackRepository;
 
     @Override
     @Transactional
@@ -336,6 +332,7 @@ public class UploadServiceImpl implements UploadService {
                 .toList();
     }
 
+    //For normal user
     @Override
     public List<UploadSessionResponse> findSessionByStatus(SessionStatus status) {
         return uploadSessionRepository
@@ -348,5 +345,33 @@ public class UploadServiceImpl implements UploadService {
                         .createdAt(session.getCreatedAt())
                         .build())
                 .toList();
+    }
+
+    //For authority
+    @Override
+    public List<UploadSessionResponse> findSessionByStatusFB(SessionStatus status) {
+        return uploadSessionRepository
+                .findAllByStatus(status)
+                .stream()
+                .map(session -> UploadSessionResponse.builder()
+                        .sessionId(session.getId())
+                        .uploadType(session.getUploadType())
+                        .user_id(session.getUser().getId())
+                        .createdAt(session.getCreatedAt())
+                        .build())
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public void updateSessionStatus(Long sessionId, SessionStatus status) {
+        UploadSession uploadSession = this.uploadSessionRepository.findById(sessionId).orElseThrow(()-> new RuntimeException("Cannot find upload session with id: " + sessionId));
+        uploadSession.setStatus(status);
+        Feedback feedback = this.feedbackRepository.findByUploadSession_Id(sessionId).orElseThrow(()-> new RuntimeException("Cannot find feedback with ss id: " + sessionId));
+        feedback.setHandledBy(getCurrentUser());
+        feedback.setHandledAt(java.time.LocalDateTime.now());
+        feedback.setStatus(FeedbackStatus.APPROVED);
+        this.feedbackRepository.save(feedback);
+        this.uploadSessionRepository.save(uploadSession);
     }
 }

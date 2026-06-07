@@ -14,6 +14,7 @@ import vn.icktmeanz.trafficViolation.entity.UploadSession;
 import vn.icktmeanz.trafficViolation.entity.User;
 import vn.icktmeanz.trafficViolation.repository.UploadSessionRepository;
 import vn.icktmeanz.trafficViolation.repository.UserRepository;
+import vn.icktmeanz.trafficViolation.service.FeedbackService;
 import vn.icktmeanz.trafficViolation.service.UploadService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -29,6 +30,7 @@ public class UploadApiController {
     private final UploadSessionRepository uploadSessionRepository;
     private final ObjectMapper objectMapper;
     private final UserRepository userRepository;
+    private final FeedbackService feedbackService;
 
     /**
      * Upload a single image for processing
@@ -209,6 +211,7 @@ public class UploadApiController {
         }
     }
 
+    //for nornmal user
     @GetMapping("/listByStatus")
     public ResponseEntity<List<UploadSessionResponse>> listUploadSessionsByStatus() {
         log.info("Received request to list upload sessions");
@@ -219,5 +222,29 @@ public class UploadApiController {
             log.error("Error listing upload sessions: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().build();
         }
+    }
+
+    //for authority
+    @GetMapping("/listByStatusFB")
+    public ResponseEntity<List<UploadSessionResponse>> listUploadSessionsByStatusFB() {
+        log.info("Received request to list upload sessions");
+        try {
+            List<UploadSessionResponse> uploadSessionResponses = this.uploadService.findSessionByStatusFB(SessionStatus.FEEDBACKING);
+            return ResponseEntity.ok(uploadSessionResponses);
+        } catch (Exception e) {
+            log.error("Error listing upload sessions: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @PutMapping("/{SessionId}/reviewFB")
+    public ResponseEntity<String> reviewFeedback(@PathVariable Long SessionId) {
+        this.uploadService.updateSessionStatus(SessionId, SessionStatus.FINALIZED);
+        return ResponseEntity.ok("Review completed");
+    }
+
+    @GetMapping("/{SessionId}/feebackContent")
+    public String FBContent(@PathVariable Long SessionId){
+        return this.feedbackService.getFeedbackBySessionId(SessionId).getDescription();
     }
 }
