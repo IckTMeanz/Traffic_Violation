@@ -7,6 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.icktmeanz.trafficViolation.constant.FeedbackStatus;
+import vn.icktmeanz.trafficViolation.constant.SessionStatus;
 import vn.icktmeanz.trafficViolation.dto.request.CreateFeedbackRequest;
 import vn.icktmeanz.trafficViolation.dto.response.FeedbackResponse;
 import vn.icktmeanz.trafficViolation.entity.Feedback;
@@ -57,6 +58,8 @@ public class FeedbackServiceImpl implements FeedbackService {
                 .build();
 
         Feedback savedFeedback = feedbackRepository.save(feedback);
+        session.setStatus(SessionStatus.FEEDBACKING);
+        uploadSessionRepository.save(session);
         log.info("Feedback created successfully with ID: {}", savedFeedback.getId());
 
         return mapToResponse(savedFeedback);

@@ -1,6 +1,7 @@
 package vn.icktmeanz.trafficViolation.service;
 
 import org.springframework.web.multipart.MultipartFile;
+import vn.icktmeanz.trafficViolation.constant.SessionStatus;
 import vn.icktmeanz.trafficViolation.constant.UploadType;
 import vn.icktmeanz.trafficViolation.dto.response.UploadSessionResponse;
 import vn.icktmeanz.trafficViolation.entity.User;
@@ -19,5 +20,7 @@ public interface UploadService {
     void processUploadedFiles(Long sessionId);
 
     List<UploadSessionResponse> findSessionByUser(User user);
+
+    List<UploadSessionResponse> findSessionByStatus(SessionStatus status);
 
 }

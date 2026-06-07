@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import vn.icktmeanz.trafficViolation.constant.SessionStatus;
 import vn.icktmeanz.trafficViolation.constant.UploadType;
 import vn.icktmeanz.trafficViolation.dto.response.UploadSessionResponse;
 import vn.icktmeanz.trafficViolation.dto.response.AIProcessingResultDTO;
@@ -204,6 +205,18 @@ public class UploadApiController {
             return ResponseEntity.ok("Session " + sessionId + " deleted successfully");
         } catch (Exception e) {
             log.error("Error deleting session: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/listByStatus")
+    public ResponseEntity<List<UploadSessionResponse>> listUploadSessionsByStatus() {
+        log.info("Received request to list upload sessions");
+        try {
+            List<UploadSessionResponse> uploadSessionResponses = this.uploadService.findSessionByStatus(SessionStatus.AI_PROCESSED);
+            return ResponseEntity.ok(uploadSessionResponses);
+        } catch (Exception e) {
+            log.error("Error listing upload sessions: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().build();
         }
     }

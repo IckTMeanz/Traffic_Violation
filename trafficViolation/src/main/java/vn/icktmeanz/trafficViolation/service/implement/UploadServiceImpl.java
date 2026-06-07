@@ -336,4 +336,17 @@ public class UploadServiceImpl implements UploadService {
                 .toList();
     }
 
+    @Override
+    public List<UploadSessionResponse> findSessionByStatus(SessionStatus status) {
+        return uploadSessionRepository
+            .findAllByUserAndStatus(getCurrentUser(), status)
+                .stream()
+                .map(session -> UploadSessionResponse.builder()
+                        .sessionId(session.getId())
+                        .uploadType(session.getUploadType())
+                        .status(session.getStatus())
+                        .createdAt(session.getCreatedAt())
+                        .build())
+                .toList();
+    }
 }

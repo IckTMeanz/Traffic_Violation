@@ -26,7 +26,7 @@ public class FeedbackApiController {
      * @param request CreateFeedbackRequest with uploadSessionId and feedbackContent
      * @return created feedback response
      */
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<FeedbackResponse> createFeedback(@RequestBody CreateFeedbackRequest request) {
         log.info("Received feedback creation request for session: {}", request.getUploadSessionId());
         try {
