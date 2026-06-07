@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Data — Traffic Violation Detect</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+    <style>
+        /* ============================================================
+           CUSTOM DESIGN SYSTEM (Đồng bộ Style & Giao diện Upload)
+           ============================================================ */
+        :root {
+            --primary: #2563EB;
+            --primary-hover: #1D4ED8;
+            --primary-light: #DBEAFE;
+            --bg-slate: #F8FAFC;
+            --text-dark: #0F172A;
+            --text-muted: #64748B;
+            --border-color: #E2E8F0;
+            --success: #16A34A;
+            --danger: #DC2626;
+            --warning: #F59E0B;
+            --info: #0EA5E9;
+            --sidebar-width: 280px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-slate);
+            color: var(--text-dark);
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        .h-44 { height: 44px !important; }
+        .rounded-xl-custom { border-radius: 12px !important; }
+        .rounded-2xl-custom { border-radius: 16px !important; }
+
+        /* Left Sidebar Layout */
+        .admin-sidebar-left {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #ffffff;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 24px 16px;
+            z-index: 100;
+        }
+
+        .main-dashboard-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            padding: 40px;
+            width: calc(100% - var(--sidebar-width));
+        }
+
+        .brand-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px 24px 12px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .system-logo {
+            background-color: var(--primary);
+            color: white;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-menu-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-menu-btn {
+            width: 100%;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.925rem;
+            padding: 12px 16px;
+            border-radius: 12px;
+            transition: all 0.2s ease-in-out;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-align: left;
+            text-decoration: none;
+        }
+
+        .sidebar-menu-btn:hover {
+            background-color: var(--bg-slate);
+            color: var(--text-dark);
+        }
+
+        .sidebar-menu-btn.active {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .signout-wrapper {
+            border-top: 1px solid var(--border-color);
+            padding-top: 16px;
+        }
+
+        /* Upload Area Drag & Drop Zone */
+        .upload-zone {
+            border: 2px dashed #CBD5E1;
+            background-color: #ffffff;
+            border-radius: 16px;
+            padding: 48px;
+            text-align: center;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+        }
+        .upload-zone:hover {
+            border-color: var(--primary);
+            background-color: var(--bg-slate);
+        }
+
+        .btn-primary-custom {
+            background-color: var(--primary);
+            border: none;
+            color: white;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        .btn-primary-custom:hover { background-color: var(--primary-hover); }
+        .btn-primary-custom:disabled { background-color: #93C5FD; cursor: not-allowed; }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-light);
+        }
+
+        .fade-in-section {
+            animation: fadeIn 0.3s ease-in-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Toast Notification System */
+        .success-toast-dynamic {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: rgba(22, 163, 74, 0.95);
+            border: 1px solid rgba(22, 163, 74, 0.4);
+            color: white;
+            font-weight: 500;
+            font-size: 0.9rem;
+            padding: 14px 22px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(22, 163, 74, 0.2);
+            z-index: 9999;
+            animation: toastSlideIn 0.4s ease, toastFadeOut 0.5s ease 2.5s forwards;
+        }
+
+        @keyframes toastSlideIn {
+            from { transform: translateX(120%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes toastFadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-20px); }
+        }
+
+        @media (max-width: 1024px) {
+            .admin-sidebar-left { width: 70px; padding: 24px 8px; }
+            .admin-sidebar-left .brand-title, .admin-sidebar-left .menu-text { display: none; }
+            .brand-wrapper { padding: 8px 0 24px 0; justify-content: center; }
+            .sidebar-menu-btn { justify-content: center; padding: 12px; }
+            .main-dashboard-content { margin-left: 70px; width: calc(100% - 70px); padding: 24px; }
+        }
+    </style>
+</head>
+<body>
+
+<aside class="admin-sidebar-left">
+    <div>
+        <div class="brand-wrapper">
+            <div class="system-logo rounded-xl-custom">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <span class="brand-title fw-bold fs-5 tracking-tight text-dark">Traffic Detect</span>
+        </div>
+
+        <nav>
+            <ul class="nav-menu-list">
+                <li>
+                    <a th:href="@{/user/upload}" class="sidebar-menu-btn active">
+                        <i class="fa-solid fa-cloud-arrow-up fa-fw"></i>
+                        <span class="menu-text">Upload data</span>
+                    </a>
+                </li>
+                <li>
+                    <a th:href="@{/user/history}" class="sidebar-menu-btn">
+                        <i class="fa-solid fa-clock-rotate-left fa-fw"></i>
+                        <span class="menu-text">See history</span>
+                    </a>
+                </li>
+                <li>
+                    <a th:href="@{/user/feedback}" class="sidebar-menu-btn">
+                        <i class="fa-solid fa-circle-exclamation fa-fw"></i>
+                        <span class="menu-text">Create feedback</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <div class="signout-wrapper">
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="sidebar-menu-btn text-danger">
+                <i class="fa-solid fa-right-from-bracket fa-fw"></i>
+                <span class="menu-text">Sign out</span>
+            </button>
+        </form>
+    </div>
+</aside>
+
+<main class="main-dashboard-content">
+
+    <header class="d-flex align-items-center justify-content-between bg-white rounded-2xl-custom border p-3 mb-4 shadow-sm">
+        <div>
+            <h1 class="h5 fw-bold mb-1">User Dashboard</h1>
+            <div class="text-secondary small">Traffic Violation Detection Portal for Citizens</div>
+        </div>
+        <div class="text-sm text-secondary">
+            <i class="fa-regular fa-circle-user me-1"></i> Công dân công cộng
+        </div>
+    </header>
+
+    <section class="fade-in-section">
+        <div class="mb-4">
+            <h2 class="fw-bold h3 mb-1">Upload dữ liệu vi phạm mới</h2>
+            <p class="text-secondary small mb-0">
+                Tải lên tệp tin hình ảnh, thư mục hoặc video để hệ thống mạng nơ-ron AI tự động phân tích hành vi lỗi đa nhãn.
+            </p>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-2xl-custom p-4 bg-white">
+
+            <div class="row g-4 mb-4">
+                <div class="col-12">
+                    <label th:for="uploadType" class="form-label fw-semibold text-sm mb-2">Bước 1: Chọn định dạng tải lên</label>
+                    <select id="uploadType" class="form-select rounded-xl-custom h-44 text-sm" onchange="onUploadTypeChange()">
+                        <option value="SINGLE_IMAGE">Hình ảnh đơn (Single image)</option>
+                        <option value="FOLDER">Thư mục ảnh (Folder images)</option>
+                        <option value="VIDEO">Tệp tin Video</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="uploadZone" class="upload-zone mb-4" onclick="triggerFileInput()">
+                <i class="fa-solid fa-cloud-arrow-up fa-3x text-primary mb-3"></i>
+                <h5 class="fw-bold text-sm mb-1" id="uploadZoneTitle">Kéo thả tệp tin vào đây hoặc nhấp để chọn file</h5>
+                <p id="uploadHint" class="text-secondary mb-4 small">
+                    Select one image (JPG, PNG, WEBP).
+                </p>
+
+                <input type="file" id="fileInput" class="d-none" onchange="renderSelectedFiles()">
+
+                <div id="selectedFiles" class="text-center small mb-3"></div>
+
+                <button type="button" id="submitUploadBtn" class="btn btn-primary-custom h-44 rounded-xl-custom px-5" onclick="submitUpload(event)">
+                    <span id="submitBtnText">Gửi báo cáo lên hệ thống</span>
+                    <span id="submitBtnSpinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status"></span>
+                </button>
+            </div>
+
+            <div id="uploadErrorAlert" class="alert alert-danger rounded-xl-custom border-0 d-none mb-3 text-sm"></div>
+
+            <div class="alert alert-primary rounded-xl-custom border-0 mb-0 small">
+                <i class="fa-solid fa-circle-info me-2"></i>
+                Hệ thống áp dụng cơ chế xử lý bất đồng bộ. Sau khi tải tệp lên thành công, bạn có thể theo dõi trạng thái trích xuất lỗi tại tab <strong>See history</strong>.
+            </div>
+        </div>
+    </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    const uploadZone = document.getElementById('uploadZone');
+    const fileInput = document.getElementById('fileInput');
+    const uploadTypeSelect = document.getElementById('uploadType');
+    const uploadHint = document.getElementById('uploadHint');
+    const selectedFilesEl = document.getElementById('selectedFiles');
+    const uploadErrorAlert = document.getElementById('uploadErrorAlert');
+
+    // Kích hoạt click chọn file từ thẻ input ẩn khi click vào vùng Drag & Drop
+    function triggerFileInput() {
+        fileInput.click();
+    }
+
+    // Đổi cấu hình tiếp nhận file của thẻ Input theo loại chọn trên Dropdown
+    function onUploadTypeChange() {
+        const type = uploadTypeSelect.value;
+        fileInput.value = '';
+        selectedFilesEl.textContent = '';
+        hideAlerts();
+
+        fileInput.removeAttribute('multiple');
+        fileInput.removeAttribute('webkitdirectory');
+        fileInput.removeAttribute('directory');
+
+        if (type === 'SINGLE_IMAGE') {
+            uploadHint.textContent = 'Hỗ trợ định dạng hình ảnh đơn: JPG, PNG, WEBP.';
+            fileInput.accept = 'image/jpeg,image/png,image/webp';
+        } else if (type === 'FOLDER') {
+            uploadHint.textContent = 'Chọn một thư mục chứa danh sách các tệp ảnh (JPG, PNG, WEBP).';
+            fileInput.accept = 'image/jpeg,image/png,image/webp';
+            fileInput.setAttribute('multiple', '');
+            fileInput.setAttribute('webkitdirectory', '');
+            fileInput.setAttribute('directory', '');
+        } else {
+            uploadHint.textContent = 'Hỗ trợ định dạng tệp tin phim: MP4, MOV, AVI, MKV.';
+            fileInput.accept = 'video/mp4,video/quicktime,video/x-msvideo,video/x-matroska';
+        }
+    }
+
+    function hideAlerts() {
+        if (uploadErrorAlert) uploadErrorAlert.classList.add('d-none');
+    }
+
+    function showError(message) {
+        uploadErrorAlert.textContent = message;
+        uploadErrorAlert.classList.remove('d-none');
+    }
+
+    // Cơ chế Toast thò ra ở góc trên bên phải rồi biến mất
+    function showSuccess(message) {
+        const toast = document.createElement('div');
+        toast.className = 'success-toast-dynamic';
+        toast.innerHTML = message;
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+
+    // Render text hiển thị thông tin danh sách tệp đã chọn
+    function renderSelectedFiles() {
+        const files = fileInput.files;
+        if (!files || files.length === 0) {
+            selectedFilesEl.textContent = '';
+            return;
+        }
+        const names = Array.from(files).map(f => f.name).join(', ');
+        selectedFilesEl.innerHTML = `<span class="text-primary font-semibold"><i class="fa-regular fa-file me-2"></i>Đã chọn ${files.length} file: ${names}</span>`;
+    }
+
+    // Logic quản lý sự kiện kéo thả file trực tiếp vào vùng Dropzone
+    uploadZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadZone.style.borderColor = 'var(--primary)';
+        uploadZone.style.backgroundColor = 'var(--bg-slate)';
+    });
+
+    uploadZone.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadZone.style.borderColor = '#CBD5E1';
+        uploadZone.style.backgroundColor = '#ffffff';
+    });
+
+    uploadZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadZone.style.borderColor = '#CBD5E1';
+        uploadZone.style.backgroundColor = '#ffffff';
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            fileInput.files = e.dataTransfer.files;
+            renderSelectedFiles();
+        }
+    });
+
+    // Ngăn chặn nổi bọt sự kiện click khi Officer bấm trúng vào nút Submit hoặc nút chọn tệp tin phía trong Card
+    document.getElementById('submitUploadBtn').addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
+
+    // Xử lý gửi dữ liệu lên REST Controller bất đồng bộ (Có chặn return dừng luồng chuẩn)
+    async function submitUpload(event) {
+        if(event) event.preventDefault();
+        hideAlerts();
+
+        const uploadType = uploadTypeSelect.value;
+        const files = fileInput.files;
+
+        if (!files || files.length === 0) {
+            showError('Vui lòng chọn hoặc kéo thả tệp tin dữ liệu trước khi gửi.');
+            return;
+        }
+
+        if (uploadType === 'SINGLE_IMAGE' && files.length !== 1) {
+            showError('Định dạng hình ảnh đơn yêu cầu chọn duy nhất một tệp tin.');
+            return;
+        }
+
+        if (uploadType === 'VIDEO' && files.length !== 1) {
+            showError('Định dạng Video yêu cầu chọn duy nhất một tệp tin.');
+            return;
+        }
+
+        if (uploadType === 'FOLDER' && files.length < 1) {
+            showError('Tải lên thư mục yêu cầu có ít nhất một hình ảnh hợp lệ.');
+            return;
+        }
+
+        const submitBtn = document.getElementById('submitUploadBtn');
+        const spinner = document.getElementById('submitBtnSpinner');
+        const btnText = document.getElementById('submitBtnText');
+
+        submitBtn.disabled = true;
+        spinner.classList.remove('d-none');
+        btnText.textContent = 'Đang tải tệp lên...';
+
+        try {
+            let endpoint = '';
+            const formData = new FormData();
+
+            if (uploadType === 'SINGLE_IMAGE') {
+                endpoint = '/api/upload/image';
+                formData.append('file', files[0]);
+            } else if (uploadType === 'VIDEO') {
+                endpoint = '/api/upload/video';
+                formData.append('file', files[0]);
+            } else if (uploadType === 'FOLDER') {
+                endpoint = '/api/upload/folder';
+                for (const file of files) {
+                    formData.append('files', file);
+                }
+            }
+
+            const uploadResponse = await fetch(endpoint, {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin'
+            });
+
+            if (!uploadResponse.ok) {
+                const errorData = await uploadResponse.json().catch(() => ({}));
+                showError(errorData.message || 'Tải tệp lên thất bại. Vui lòng thử lại.');
+                return;
+            }
+
+            const uploadData = await uploadResponse.json();
+            const sessionId = uploadData.sessionId;
+            const fileCount = uploadData.mediaFiles ? uploadData.mediaFiles.length : 0;
+
+            btnText.textContent = 'Đang gửi yêu cầu phân tích AI...';
+            const processResponse = await fetch(`/api/upload/${sessionId}/process`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin'
+            });
+
+            if (!processResponse.ok) {
+                showError('Gửi tác vụ phân tích mạng AI lỗi. Vui lòng thử lại.');
+                return;
+            }
+
+            // Gọi Toast thông báo thò thụt mượt mà ở góc phải màn hình
+            showSuccess(
+                `<i class="fa-solid fa-circle-check me-2"></i> Tải lên thành công! Biên bản #RP-${sessionId} (${fileCount} tệp) đã được đưa vào luồng xử lý AI.`
+            );
+
+            fileInput.value = '';
+            selectedFilesEl.textContent = '';
+
+            // Điều hướng người dùng về trang danh sách lịch sử sau khi Toast chuẩn bị biến mất
+            setTimeout(() => window.location.href = '/report/history', 1500);
+
+        } catch (err) {
+            console.error('Error:', err);
+            showError('Lỗi kết nối mạng: ' + err.message);
+        } finally {
+            submitBtn.disabled = false;
+            spinner.classList.add('d-none');
+            btnText.textContent = 'Gửi báo cáo lên hệ thống';
+        }
+    }
+
+    // Chạy cấu hình ban đầu cho loại Single Image
+    onUploadTypeChange();
+</script>
+
+</body>
+</html>

@@ -4,16 +4,26 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@RequestMapping("/")
+@RequestMapping("/user")
 public class UserController {
-    
-    @GetMapping("/admin")
-    public String admin() {
-        return "admin2";
-    }
 
-    @GetMapping("/user")
+    @GetMapping
     public String user() {
         return "dashboard";
+    }
+
+    @GetMapping("/upload")
+    public String upload() {
+        return "upload-user";
+    }
+
+    @GetMapping("/history")
+    public String history() {
+        return "result-user";
+    }
+
+    @GetMapping("/feedback")
+    public String feedback() {
+        return "feedback-user";
     }
 }
