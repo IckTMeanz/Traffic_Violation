@@ -43,7 +43,7 @@ public class UploadServiceImpl implements UploadService {
     private final MediaFileRepository mediaFileRepository;
     private final DetectedViolationRepository detectedViolationRepository;
     private final UserRepository userRepository;
-    private final FileStorageService fileStorageService;
+    private final CloudinaryStorageService cloudinaryStorageService;
     private final AIService aiService;
     private final ObjectMapper objectMapper;
     private final FeedbackRepository feedbackRepository;
@@ -65,7 +65,7 @@ public class UploadServiceImpl implements UploadService {
 
         List<MediaFile> mediaFiles = new ArrayList<>();
         for (MultipartFile file : files) {
-            String storedPath = fileStorageService.storeFile(file, uploadType, session.getId());
+            String storedPath = cloudinaryStorageService.uploadFile(file, uploadType, session.getId());
             MediaFile mediaFile = MediaFile.builder()
                     .uploadSession(session)
                     .originalUrl(storedPath)
@@ -173,7 +173,7 @@ public class UploadServiceImpl implements UploadService {
     @Transactional
     public void processUploadedFiles(Long sessionId) {
         log.info("Asynchronously processing uploaded files for session: {}", sessionId);
-        
+
         UploadSession session = uploadSessionRepository.findById(sessionId)
                 .orElseThrow(() -> new IllegalArgumentException("Upload session not found: " + sessionId));
 
@@ -188,7 +188,7 @@ public class UploadServiceImpl implements UploadService {
         try {
             switch (session.getUploadType()) {
                 case SINGLE_IMAGE -> processSingleImage(mediaFiles.getFirst());
-                case FOLDER -> processFolder(mediaFiles); // Đã sửa đổi sang gửi mảng tệp tin
+                case FOLDER -> processFolder(mediaFiles);
                 case VIDEO -> processVideo(mediaFiles.getFirst());
             }
 
@@ -198,45 +198,38 @@ public class UploadServiceImpl implements UploadService {
 
         } catch (Exception e) {
             log.error("Error processing async session: {}", sessionId, e);
-            // Có thể bổ sung cập nhật trạng thái lỗi FAILED tại đây nếu bảng trạng thái cho phép
             throw new RuntimeException("Failed to process uploaded files: " + e.getMessage(), e);
         }
     }
 
     private void processSingleImage(MediaFile mediaFile) {
-        log.info("Processing single image file: {}", mediaFile.getId());
+        log.info("Processing single image via URL: {}", mediaFile.getId());
         processMediaFile(mediaFile);
     }
 
     /**
-     * SỬA LỖI: Gom toàn bộ danh sách tệp tin của Folder gửi sang Flask nhận mảng JSON kết quả
+     * ĐÃ SỬA LỖI: Lấy danh sách chuỗi URL từ Cloudinary truyền thẳng sang AIService
      */
     private void processFolder(List<MediaFile> mediaFiles) {
-        log.info("Processing batch folder with {} images concurrently via Flask", mediaFiles.size());
+        log.info("Processing batch folder with {} images via URLs", mediaFiles.size());
         try {
-            // Chuyển đổi danh sách đường dẫn chuỗi thành mảng các đối tượng File tương ứng
-            File[] filesToSend = mediaFiles.stream()
-                    .map(mf -> new File(mf.getOriginalUrl()))
-                    .toArray(File[]::new);
+            // Gom tất cả các URL Cloudinary dạng chuỗi vào một List
+            List<String> urlsToSend = mediaFiles.stream()
+                    .map(MediaFile::getOriginalUrl)
+                    .toList();
 
-            // Gọi API xử lý Folder của Flask nhận về danh sách kết quả List<AIProcessingResultDTO>
-            // Lưu ý: Đảm bảo interface AIService đã được khai báo trả về List<AIProcessingResultDTO> tại phương thức processFolder
-            List<AIProcessingResultDTO> results = aiService.processFolder(filesToSend);
+            // Gửi sang Flask API xử lý theo danh sách URL
+            List<AIProcessingResultDTO> results = aiService.processFolder(urlsToSend);
 
-            // Ánh xạ tuần tự kết quả trả về tương ứng với danh sách mediaFiles trong DB
             for (int i = 0; i < mediaFiles.size(); i++) {
                 MediaFile mediaFile = mediaFiles.get(i);
-                
-                // Phòng ngừa trường hợp danh sách Flask trả về lệch kích thước do lỗi xử lý file cụ thể
-                if (i >= results.size()) break; 
+                if (i >= results.size()) break;
 
                 AIProcessingResultDTO fileResult = results.get(i);
 
-                // Cập nhật đường dẫn ảnh kết quả đã được vẽ bounding box
                 mediaFile.setProcessedUrl(fileResult.getProcessedUrl());
                 mediaFileRepository.save(mediaFile);
 
-                // Lưu các chi tiết vi phạm của bức ảnh hiện tại
                 if (fileResult.getObjects() != null && !fileResult.getObjects().isEmpty()) {
                     for (DetectedObjectDTO detectedObject : fileResult.getObjects()) {
                         saveDetectedViolation(mediaFile, detectedObject);
@@ -249,11 +242,14 @@ public class UploadServiceImpl implements UploadService {
         }
     }
 
+    /**
+     * ĐÃ SỬA LỖI: Truyền URL trực tiếp thay vì khởi tạo đối tượng File cục bộ
+     */
     private void processVideo(MediaFile mediaFile) {
-        log.info("Processing video file: {}", mediaFile.getId());
+        log.info("Processing video via URL: {}", mediaFile.getId());
         try {
-            File videoFile = new File(mediaFile.getOriginalUrl());
-            AIProcessingResultDTO aiResult = aiService.processVideo(videoFile);
+            String videoUrl = mediaFile.getOriginalUrl();
+            AIProcessingResultDTO aiResult = aiService.processVideo(videoUrl);
 
             mediaFile.setProcessedUrl(aiResult.getProcessedUrl());
             mediaFile = mediaFileRepository.save(mediaFile);
@@ -272,8 +268,8 @@ public class UploadServiceImpl implements UploadService {
 
     private void processMediaFile(MediaFile mediaFile) {
         try {
-            String imagePath = mediaFile.getOriginalUrl();
-            AIProcessingResultDTO aiResult = aiService.processImage(imagePath);
+            String imageUrl = mediaFile.getOriginalUrl();
+            AIProcessingResultDTO aiResult = aiService.processImage(imageUrl);
 
             mediaFile.setProcessedUrl(aiResult.getProcessedUrl());
             mediaFile = mediaFileRepository.save(mediaFile);

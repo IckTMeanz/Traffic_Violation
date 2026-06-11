@@ -3,6 +3,7 @@ package vn.icktmeanz.trafficViolation.service.implement;
 import java.io.File;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
@@ -35,30 +36,18 @@ public class AIServiceImpl implements AIService {
     private String aiServiceUrl;
 
     @Override
-    public AIProcessingResultDTO processImage(String imagePath) {
+    public AIProcessingResultDTO processImage(String imageUrl) {
         try {
-            File imageFile = new File(imagePath);
-            if (!imageFile.exists()) {
-                throw new IllegalArgumentException("Image file not found: " + imagePath);
-            }
-            log.info("Processing image via AI service: {}", imagePath);
-            return callAIServiceForSingleImage(imageFile);
-        } catch (Exception e) {
-            log.error("Error processing image: {}", imagePath, e);
-            throw new RuntimeException("Failed to process image: " + e.getMessage(), e);
-        }
-    }
-
-    private AIProcessingResultDTO callAIServiceForSingleImage(File imageFile) {
-        try {
+            log.info("Calling AI service for single image URL: {}", imageUrl);
             String serviceUrl = aiServiceUrl + "/api/ai/process-image";
-            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-            body.add("file", new FileSystemResource(imageFile));
+
+            // Gửi Body dạng JSON { "url": "..." }
+            Map<String, String> requestBody = Map.of("url", imageUrl);
 
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+            headers.setContentType(MediaType.APPLICATION_JSON);
 
-            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+            HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(requestBody, headers);
             ResponseEntity<String> response = restTemplate.postForEntity(serviceUrl, requestEntity, String.class);
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
@@ -67,33 +56,27 @@ public class AIServiceImpl implements AIService {
                 throw new RuntimeException("AI service returned error status: " + response.getStatusCode());
             }
         } catch (Exception e) {
-            log.error("Error calling AI service for single image", e);
-            throw new RuntimeException("Failed to call AI service: " + e.getMessage(), e);
+            log.error("Error processing image URL: {}", imageUrl, e);
+            throw new RuntimeException("Failed to process image via URL: " + e.getMessage(), e);
         }
     }
-
-    /**
-     * SỬA LỖI: Nhận về danh sách List<AIProcessingResultDTO> vì Flask trả về mảng kết quả cho Folder
-     */
-    public List<AIProcessingResultDTO> processFolder(File[] imageFiles) {
+    
+    @Override
+    public List<AIProcessingResultDTO> processFolder(List<String> imageUrls) {
         try {
             String serviceUrl = aiServiceUrl + "/api/ai/process-folder";
-            log.info("Calling folder processing AI service: {}", serviceUrl);
+            log.info("Calling batch folder processing AI service with {} URLs", imageUrls.size());
 
-            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-            for (File imageFile : imageFiles) {
-                body.add("files", new FileSystemResource(imageFile));
-            }
+            // Gửi Body dạng JSON { "urls": ["...", "..."] }
+            Map<String, List<String>> requestBody = Map.of("urls", imageUrls);
 
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+            headers.setContentType(MediaType.APPLICATION_JSON);
 
-            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+            HttpEntity<Map<String, List<String>>> requestEntity = new HttpEntity<>(requestBody, headers);
             ResponseEntity<String> response = restTemplate.postForEntity(serviceUrl, requestEntity, String.class);
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                log.info("Folder processing AI service response received successfully");
-                // Đọc dữ liệu dưới dạng List thay vì Object đơn lẻ
                 return objectMapper.readValue(response.getBody(), new TypeReference<List<AIProcessingResultDTO>>() {});
             } else {
                 throw new RuntimeException("AI service returned error status: " + response.getStatusCode());
@@ -104,16 +87,19 @@ public class AIServiceImpl implements AIService {
         }
     }
 
-    public AIProcessingResultDTO processVideo(File videoFile) {
+    @Override
+    public AIProcessingResultDTO processVideo(String videoUrl) {
         try {
             String serviceUrl = aiServiceUrl + "/api/ai/process-video";
-            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-            body.add("file", new FileSystemResource(videoFile));
+            log.info("Calling video processing AI service for URL: {}", videoUrl);
+
+            // Gửi Body dạng JSON { "url": "..." }
+            Map<String, String> requestBody = Map.of("url", videoUrl);
 
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+            headers.setContentType(MediaType.APPLICATION_JSON);
 
-            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+            HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(requestBody, headers);
             ResponseEntity<String> response = restTemplate.postForEntity(serviceUrl, requestEntity, String.class);
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {

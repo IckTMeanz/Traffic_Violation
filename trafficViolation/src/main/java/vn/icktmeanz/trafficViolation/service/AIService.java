@@ -19,12 +19,12 @@ public interface AIService {
      * @param imageFiles array of image files
      * @return List<AIProcessingResultDTO> containing detected violations for each image
      */
-    List<AIProcessingResultDTO> processFolder(File[] imageFiles);
+    List<AIProcessingResultDTO> processFolder(List<String> imageFiles);
 
     /**
      * Process video file using AI model service
      * @param videoFile video file to process
      * @return AIProcessingResultDTO containing detected violations from first detected frame
      */
-    AIProcessingResultDTO processVideo(File videoFile);
+    AIProcessingResultDTO processVideo(String videoFile);
 }
