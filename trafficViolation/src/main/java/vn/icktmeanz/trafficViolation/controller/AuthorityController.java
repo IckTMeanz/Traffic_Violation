@@ -24,6 +24,6 @@ public class AuthorityController {
 
     @GetMapping("/statistic")
     public String statistic() {
-        return "statistc-aut";
+        return "statistic-aut";
     }
 }

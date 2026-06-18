@@ -14,6 +14,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 
     <link rel="stylesheet" th:href="@{/style-aut.css}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 </head>
 <body>
 
@@ -94,70 +95,104 @@
             </p>
         </div>
 
-        <div class="row g-4 mb-4">
-
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm rounded-2xl-custom p-4">
-                    <div class="text-secondary small mb-2">Total Uploads</div>
-                    <div class="display-6 fw-bold" data-stat="totalUploads">1,248</div>
-                </div>
+        <!-- Date Picker -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">Month</label>
+                <input type="number" id="monthInput" class="form-control rounded-xl-custom" min="1" max="12" value="1" placeholder="Month">
             </div>
-
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm rounded-2xl-custom p-4">
-                    <div class="text-secondary small mb-2">No Helmet</div>
-                    <div class="display-6 fw-bold text-danger" data-stat="noHelmet">642</div>
-                </div>
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">Year</label>
+                <input type="number" id="yearInput" class="form-control rounded-xl-custom" min="2020" max="2099" placeholder="Year">
             </div>
-
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm rounded-2xl-custom p-4">
-                    <div class="text-secondary small mb-2">Using Mobile</div>
-                    <div class="display-6 fw-bold text-warning" data-stat="usingPhone">318</div>
-                </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button class="btn btn-primary-custom rounded-xl-custom w-100" onclick="loadStatistics()">
+                    <i class="fa-solid fa-magnifying-glass me-2"></i>Load
+                </button>
             </div>
-
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm rounded-2xl-custom p-4">
-                    <div class="text-secondary small mb-2">Approved Accuracy</div>
-                    <div class="display-6 fw-bold text-success" data-stat="accuracy">94.6%</div>
-                </div>
-            </div>
-
         </div>
 
-        <div class="card border-0 shadow-sm rounded-2xl-custom overflow-hidden">
-
-            <div class="table-responsive">
-
-                <table class="table table-hover align-middle mb-0">
-
-                    <thead class="table-light">
-                    <tr>
-                        <th class="px-4 py-3">Month</th>
-                        <th class="px-4 py-3">Total Reports</th>
-                        <th class="px-4 py-3">No Helmet</th>
-                        <th class="px-4 py-3">Using Mobile</th>
-                        <th class="px-4 py-3">Triple Riding</th>
-                        <th class="px-4 py-3">Corrected By Authority</th>
-                    </tr>
-                    </thead>
-
-                    <tbody id="statisticsTableBody">
-                    <tr>
-                        <td class="px-4 py-3 fw-semibold">05 / 2026</td>
-                        <td class="px-4 py-3">412</td>
-                        <td class="px-4 py-3 text-danger fw-semibold">210</td>
-                        <td class="px-4 py-3 text-warning fw-semibold">95</td>
-                        <td class="px-4 py-3 text-primary fw-semibold">45</td>
-                        <td class="px-4 py-3 text-success fw-semibold">32</td>
-                    </tr>
-                    </tbody>
-
-                </table>
-
+        <!-- Summary Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm rounded-2xl-custom p-4">
+                    <div class="text-secondary small mb-2">Total Violations</div>
+                    <div class="display-6 fw-bold" id="totalViolations">0</div>
+                </div>
             </div>
 
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm rounded-2xl-custom p-4">
+                    <div class="text-secondary small mb-2">Most Common Error</div>
+                    <div class="h6 fw-bold text-danger" id="mostCommonError">N/A</div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm rounded-2xl-custom p-4">
+                    <div class="text-secondary small mb-2">Type Count</div>
+                    <div class="display-6 fw-bold text-primary" id="typeCount">0</div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm rounded-2xl-custom p-4">
+                    <div class="text-secondary small mb-2">Data Period</div>
+                    <div class="h6 fw-bold text-success" id="datePeriod">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="row g-4 mb-4">
+            <!-- Pie Chart -->
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm rounded-2xl-custom p-4">
+                    <h5 class="fw-bold mb-3">Violation Distribution (%)</h5>
+                    <div style="position: relative; height: 350px;">
+                        <canvas id="violationPieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bar Chart -->
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm rounded-2xl-custom p-4">
+                    <h5 class="fw-bold mb-3">Violation Count by Type</h5>
+                    <div style="position: relative; height: 350px;">
+                        <canvas id="violationBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Table -->
+        <div class="card border-0 shadow-sm rounded-2xl-custom overflow-hidden">
+            <div class="card-header bg-light p-3">
+                <h5 class="fw-bold mb-0">
+                    <i class="fa-solid fa-table me-2"></i>Detailed Violation Statistics
+                </h5>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th class="px-4 py-3">#</th>
+                        <th class="px-4 py-3">Violation Type</th>
+                        <th class="px-4 py-3 text-center">Count</th>
+                        <th class="px-4 py-3 text-center">Percentage</th>
+                    </tr>
+                    </thead>
+                    <tbody id="violationTableBody">
+                    <tr>
+                        <td colspan="5" class="px-4 py-4 text-center text-secondary">
+                            <i class="fa-solid fa-spinner fa-spin me-2"></i>Loading data...
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
     </section>
@@ -167,78 +202,265 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    // Load monthly statistics when page loads
-    function loadMonthlyStatistics() {
-        fetch('/api/statistics/all')
-            .then(r => r.ok ? r.json() : [])
-            .then(stats => {
-                const statsTable = document.getElementById('statisticsTableBody');
+    let pieChartInstance = null;
+    let barChartInstance = null;
 
-                if (!stats || stats.length === 0) {
-                    // Calculate for current month if no stats available
-                    const now = new Date();
-                    calculateStatistics(now.getMonth() + 1, now.getFullYear());
-                    return;
+    // Initialize on page load
+    window.addEventListener('DOMContentLoaded', function() {
+        // Set current month and year
+        const now = new Date();
+        document.getElementById('monthInput').value = now.getMonth() + 1;
+        document.getElementById('yearInput').value = now.getFullYear();
+        
+        // Load statistics for current month
+        loadStatistics();
+    });
+
+    // Load statistics from API
+    function loadStatistics() {
+        const month = document.getElementById('monthInput').value;
+        const year = document.getElementById('yearInput').value;
+
+        if (!month || !year) {
+            alert('Please select month and year');
+            return;
+        }
+
+        // Update date period display
+        const monthName = new Date(year, month - 1).toLocaleString('en-US', { month: 'long', year: 'numeric' });
+        document.getElementById('datePeriod').textContent = monthName;
+
+        // Fetch data from API
+        fetch(`/api/statistics/monthly?month=${month}&year=${year}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Statistics data:', data);
+                if (data && data.length > 0) {
+                    displayStatistics(data);
+                } else {
+                    showEmptyState();
+                }
+            })
+            .catch(error => {
+                console.error('Error loading statistics:', error);
+                showErrorState();
+            });
+    }
 
-                // Sort by month descending (most recent first)
-                stats.sort((a, b) => {
-                    const dateA = new Date(a.year, a.month - 1);
-                    const dateB = new Date(b.year, b.month - 1);
-                    return dateB - dateA;
-                });
+    // Display statistics
+    function displayStatistics(data) {
+        // Calculate totals
+        const totalViolations = data.reduce((sum, item) => sum + item.violationCount, 0);
+        
+        // Find most common error
+        const mostCommon = data.reduce((prev, current) => 
+            (prev.violationCount > current.violationCount) ? prev : current
+        );
 
-                statsTable.innerHTML = stats.map(s => `
-                    <tr>
-                        <td class="px-4 py-3 fw-semibold">${String(s.month).padStart(2, '0')} / ${s.year}</td>
-                        <td class="px-4 py-3">${s.totalReports || 0}</td>
-                        <td class="px-4 py-3 text-danger fw-semibold">${s.noHelmetCount || 0}</td>
-                        <td class="px-4 py-3 text-warning fw-semibold">${s.usingPhoneCount || 0}</td>
-                        <td class="px-4 py-3 text-primary fw-semibold">${s.tripleRidingCount || 0}</td>
-                        <td class="px-4 py-3 text-success fw-semibold">${s.approvedReports || 0}</td>
-                    </tr>
-                `).join('');
+        // Update summary cards
+        document.getElementById('totalViolations').textContent = totalViolations.toLocaleString();
+        document.getElementById('mostCommonError').textContent = mostCommon.violationName || 'N/A';
+        document.getElementById('typeCount').textContent = data.length;
 
-                // Update summary cards with latest month data
-                if (stats.length > 0) {
-                    const latest = stats[0];
-                    document.querySelector('[data-stat="totalUploads"]').textContent = latest.totalReports || '0';
-                    document.querySelector('[data-stat="noHelmet"]').textContent = latest.noHelmetCount || '0';
-                    document.querySelector('[data-stat="usingPhone"]').textContent = latest.usingPhoneCount || '0';
+        // Update table
+        updateTable(data, totalViolations);
 
-                    // Calculate accuracy if data available
-                    if (latest.totalReports > 0) {
-                        const accuracy = ((latest.approvedReports / latest.totalReports) * 100).toFixed(1);
-                        document.querySelector('[data-stat="accuracy"]').textContent = accuracy + '%';
+        // Update charts
+        updateCharts(data, totalViolations);
+    }
+
+    // Update table
+    function updateTable(data, totalViolations) {
+        const tbody = document.getElementById('violationTableBody');
+        
+        tbody.innerHTML = data.map((item, index) => {
+            const percentage = ((item.violationCount / totalViolations) * 100).toFixed(2);
+            const color = getColorForIndex(index);
+            
+            return `
+                <tr>
+                    <td class="px-4 py-3">
+                        <span class="badge rounded-pill" style="background-color: ${color};">${index + 1}</span>
+                    </td>
+                    <td class="px-4 py-3 fw-semibold">${item.violationName}</td>
+                    <td class="px-4 py-3 text-center">
+                        <span class="badge bg-info text-dark">${item.violationCount}</span>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        <strong>${percentage}%</strong>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    // Update charts
+    function updateCharts(data, totalViolations) {
+        const labels = data.map(item => item.violationName);
+        const counts = data.map(item => item.violationCount);
+        const colors = data.map((_, index) => getColorForIndex(index));
+        const percentages = counts.map(count => ((count / totalViolations) * 100).toFixed(2));
+
+        // Update Pie Chart
+        updatePieChart(labels, counts, percentages, colors);
+
+        // Update Bar Chart
+        updateBarChart(labels, counts, colors);
+    }
+
+    // Update Pie Chart - FIXED
+    function updatePieChart(labels, counts, percentages, colors) {
+        const ctx = document.getElementById('violationPieChart').getContext('2d');
+        
+        if (pieChartInstance) {
+            pieChartInstance.destroy();
+        }
+
+        pieChartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: counts,
+                    backgroundColor: colors,
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 750,
+                    easing: 'easeInOutQuart'
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            font: {
+                                size: 11,
+                                weight: 'bold'
+                            },
+                            usePointStyle: true
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                const index = context.dataIndex;
+                                const percentage = percentages[index];
+                                return `${label}: ${value} (${percentage}%)`;
+                            }
+                        }
                     }
                 }
-            })
-            .catch(err => {
-                console.error('Error loading statistics:', err);
-                document.getElementById('statisticsTableBody').innerHTML =
-                    '<tr><td colspan="6" class="text-center py-4 text-secondary">Loading statistics...</td></tr>';
-            });
+            }
+        });
     }
 
-    // Calculate statistics for a specific month
-    function calculateStatistics(month, year) {
-        fetch(`/api/statistics/calculate/${month}/${year}`, {
-            method: 'POST',
-            credentials: 'same-origin'
-        })
-            .then(r => r.ok ? r.json() : Promise.reject())
-            .then(() => {
-                console.log('Statistics calculated');
-                loadMonthlyStatistics();
-            })
-            .catch(err => {
-                console.log('Statistics calculation not available yet:', err);
-                // Don't show error - just keep default data
-            });
+    // Update Bar Chart - FIXED
+    function updateBarChart(labels, counts, colors) {
+        const ctx = document.getElementById('violationBarChart').getContext('2d');
+        
+        if (barChartInstance) {
+            barChartInstance.destroy();
+        }
+
+        barChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Violation Count',
+                    data: counts,
+                    backgroundColor: colors,
+                    borderColor: colors,
+                    borderWidth: 1,
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                animation: {
+                    duration: 750,
+                    easing: 'easeInOutQuart'
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        labels: {
+                            usePointStyle: true
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            font: {
+                                size: 11
+                            }
+                        }
+                    }
+                }
+            }
+        });
     }
 
-    // Load statistics when page loads
-    window.addEventListener('DOMContentLoaded', loadMonthlyStatistics);
+    // Helper function to get color for each index
+    function getColorForIndex(index) {
+        const colors = [
+            '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8',
+            '#F7DC6F', '#BB8FCE', '#85C1E2', '#F8B88B', '#ABEBC6'
+        ];
+        return colors[index % colors.length];
+    }
+
+    // Show empty state
+    function showEmptyState() {
+        document.getElementById('totalViolations').textContent = '0';
+        document.getElementById('mostCommonError').textContent = 'No data';
+        document.getElementById('typeCount').textContent = '0';
+        
+        document.getElementById('violationTableBody').innerHTML = `
+            <tr>
+                <td colspan="5" class="px-4 py-4 text-center text-secondary">
+                    <i class="fa-solid fa-inbox me-2"></i>No violations found for this period
+                </td>
+            </tr>
+        `;
+
+        // Clear charts
+        if (pieChartInstance) pieChartInstance.destroy();
+        if (barChartInstance) barChartInstance.destroy();
+    }
+
+    // Show error state
+    function showErrorState() {
+        document.getElementById('violationTableBody').innerHTML = `
+            <tr>
+                <td colspan="5" class="px-4 py-4 text-center text-danger">
+                    <i class="fa-solid fa-triangle-exclamation me-2"></i>Error loading data. Please try again.
+                </td>
+            </tr>
+        `;
+    }
 </script>
 
 </body>
