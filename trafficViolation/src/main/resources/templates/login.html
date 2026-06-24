@@ -265,7 +265,7 @@
 
     <!-- Login Error -->
     <div th:if="${param.error}" class="error-message">
-        Sai tên đăng nhập hoặc mật khẩu
+        <span th:text="${param.error}"></span>
     </div>
 
 

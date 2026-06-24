@@ -1,5 +1,7 @@
 package vn.icktmeanz.trafficViolation.configuration;
 
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import vn.icktmeanz.trafficViolation.service.implement.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +15,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Configuration
 @RequiredArgsConstructor
@@ -75,7 +80,7 @@ public class SecurityConfig {
                         .successHandler(authenticationSuccessHandler())
 
                         // login fail
-                        .failureUrl("/login?error")
+                        .failureHandler(authenticationFailureHandler())
 
                         .permitAll()
                 )
@@ -132,4 +137,23 @@ public class SecurityConfig {
         }
     };
 }
+
+    @Bean
+    public AuthenticationFailureHandler authenticationFailureHandler() {
+        return (request, response, exception) -> {
+
+            String message;
+
+            if (exception instanceof DisabledException) {
+                message = "Tài khoản đã bị vô hiệu hóa";
+            } else {
+                message = "Sai tên đăng nhập hoặc mật khẩu";
+            }
+
+            response.sendRedirect(
+                    "/login?error=" +
+                            URLEncoder.encode(message, StandardCharsets.UTF_8)
+            );
+        };
+    }
 }
