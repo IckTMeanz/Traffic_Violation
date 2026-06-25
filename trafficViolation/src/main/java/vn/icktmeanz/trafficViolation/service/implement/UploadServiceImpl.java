@@ -297,6 +297,7 @@ public class UploadServiceImpl implements UploadService {
             }
 
             DetectedViolation violation = DetectedViolation.builder()
+                    .cropUuid(detectedObject.getObjectId())
                     .mediaFile(mediaFile)
                     .violationTypes(detectedObject.getViolationTypes())
                     .boundingBox(boundingBoxJson)

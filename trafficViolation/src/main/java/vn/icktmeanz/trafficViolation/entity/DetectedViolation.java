@@ -50,4 +50,7 @@ public class DetectedViolation {
 
     @Column(name = "is_authority_corrected", nullable = false)
     private boolean isAuthorityCorrected = false;
+
+    @Column(name = "crop_uuid", length = 36)
+    private String cropUuid;
 }

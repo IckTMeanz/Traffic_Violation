@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -14,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import vn.icktmeanz.trafficViolation.dto.response.AIProcessingResultDTO;
+import vn.icktmeanz.trafficViolation.dto.response.AIRetrainStatusResponse;
 import vn.icktmeanz.trafficViolation.service.AIService;
 
 @Service
@@ -110,6 +111,56 @@ public class AIServiceImpl implements AIService {
         } catch (Exception e) {
             log.error("Error calling video processing AI service", e);
             throw new RuntimeException("Failed to call AI service: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public String retrainModel() {
+        try {
+            String serviceUrl = aiServiceUrl + "/api/ai/retrain";
+            log.info("Calling AI retrain service: {}", serviceUrl);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(Map.of(), headers);
+            ResponseEntity<String> response = restTemplate.postForEntity(serviceUrl, requestEntity, String.class);
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                return response.getBody();
+            }
+
+            throw new RuntimeException("AI service returned status: " + response.getStatusCode());
+        } catch (HttpStatusCodeException e) {
+            log.warn("AI retrain service returned error status: {}", e.getStatusCode());
+
+            if (e.getStatusCode().value() == 409) {
+                throw new IllegalStateException("Model is already retraining");
+            }
+
+            throw new RuntimeException("Failed to retrain AI model: " + e.getResponseBodyAsString(), e);
+        } catch (Exception e) {
+            log.error("Error calling AI retrain service", e);
+            throw new RuntimeException("Failed to retrain AI model: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public AIRetrainStatusResponse getRetrainStatus() {
+        try {
+            String serviceUrl = aiServiceUrl + "/api/ai/retrain/status";
+            log.info("Calling AI retrain status service: {}", serviceUrl);
+
+            ResponseEntity<String> response = restTemplate.getForEntity(serviceUrl, String.class);
+
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                return objectMapper.readValue(response.getBody(), AIRetrainStatusResponse.class);
+            }
+
+            throw new RuntimeException("AI service returned status: " + response.getStatusCode());
+        } catch (Exception e) {
+            log.error("Error getting AI retrain status", e);
+            throw new RuntimeException("Failed to get retrain status: " + e.getMessage(), e);
         }
     }
 }

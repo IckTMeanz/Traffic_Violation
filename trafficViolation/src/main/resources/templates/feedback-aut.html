@@ -563,7 +563,6 @@
         mediaList.innerHTML = mediaFiles.map(media => {
             const processedUrl = media.processedUrl || media.processed_url || '';
             const originalUrl = media.originalUrl || media.original_url || '';
-            const aiStatus = media.aiStatus || media.ai_status || '';
 
             return `
                 <div class="card border rounded-2xl-custom p-3 mb-3 bg-white">
@@ -572,9 +571,6 @@
                             <h6 class="fw-bold mb-1">
                                 MediaFile ID: #${escapeHtml(media.id)}
                             </h6>
-                            <div class="text-secondary small">
-                                AI Status: ${escapeHtml(aiStatus || 'UNKNOWN')}
-                            </div>
                         </div>
                     </div>
 

@@ -1,6 +1,7 @@
 package vn.icktmeanz.trafficViolation.service;
 
 import vn.icktmeanz.trafficViolation.dto.response.AIProcessingResultDTO;
+import vn.icktmeanz.trafficViolation.dto.response.AIRetrainStatusResponse;
 
 import java.io.File;
 import java.util.List;
@@ -27,4 +28,13 @@ public interface AIService {
      * @return AIProcessingResultDTO containing detected violations from first detected frame
      */
     AIProcessingResultDTO processVideo(String videoFile);
+
+    /**
+     * Trigger retrain model on Python AI service.
+     */
+    String retrainModel();
+    /**
+     * Call Python AI service to retrain model.
+     */
+    AIRetrainStatusResponse getRetrainStatus();
 }

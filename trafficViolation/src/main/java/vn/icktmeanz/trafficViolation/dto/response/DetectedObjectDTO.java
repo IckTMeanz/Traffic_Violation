@@ -15,7 +15,7 @@ import java.util.List;
 public class DetectedObjectDTO {
     @JsonProperty("object_id")
 
-    private Integer objectId;
+    private String objectId;
 
     @JsonProperty("violation_types")
     private List<String> violationTypes;

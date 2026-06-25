@@ -23,7 +23,7 @@ public class DetectedViolationServiceImpl implements DetectedViolationService {
     public List<DetectedObjectDTO> findByMedia(MediaFile mediaFile) {
         return this.detectedViolationRepository.findAllByMediaFile(mediaFile).stream()
                 .map(detectedViolation -> DetectedObjectDTO.builder()
-                        .objectId(Math.toIntExact(detectedViolation.getId()))
+                        .objectId(detectedViolation.getCropUuid())
                         .violationTypes(detectedViolation.getViolationTypes())
                         .confidence(detectedViolation.getConfidence())
                         .build()).toList();
@@ -33,7 +33,7 @@ public class DetectedViolationServiceImpl implements DetectedViolationService {
     public List<DetectedObjectDTO> findByMediaId(Long id) {
         return this.detectedViolationRepository.findAllByMediaFile_Id(id).stream()
                 .map(detectedViolation -> DetectedObjectDTO.builder()
-                        .objectId(Math.toIntExact(detectedViolation.getId()))
+                        .objectId(detectedViolation.getCropUuid())
                         .violationTypes(detectedViolation.getViolationTypes())
                         .confidence(detectedViolation.getConfidence())
                         .build()).toList();
@@ -48,7 +48,7 @@ public class DetectedViolationServiceImpl implements DetectedViolationService {
         violation.setAuthorityCorrected(true);
         this.detectedViolationRepository.save(violation);
         return DetectedObjectDTO.builder().
-        objectId(Math.toIntExact(violation.getId()))
+        objectId(violation.getCropUuid())
                 .violationTypes(violationTypes).confidence(violation.getConfidence()).build();
     }
 }
