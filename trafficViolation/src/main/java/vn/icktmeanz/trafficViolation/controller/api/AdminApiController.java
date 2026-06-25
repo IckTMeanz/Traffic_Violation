@@ -24,9 +24,10 @@ public class AdminApiController {
     private AIService aIService;
 
     @Autowired
-    public AdminApiController(UserService userService, DetectedViolationRepository detectedViolationRepository){
+    public AdminApiController(UserService userService, DetectedViolationRepository detectedViolationRepository, AIService aIService){
         this.userService = userService;
         this.detectedViolationRepository = detectedViolationRepository;
+        this.aIService = aIService;
     }
 
     @GetMapping("/all")
