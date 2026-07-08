@@ -115,52 +115,27 @@ public class AIServiceImpl implements AIService {
     }
 
     @Override
-    public String retrainModel() {
+    public Map<String, Object> retrainModel() {
         try {
             String serviceUrl = aiServiceUrl + "/api/ai/retrain";
-            log.info("Calling AI retrain service: {}", serviceUrl);
+            log.info("Calling AI build-retrain-csv service: {}", serviceUrl);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-
             HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(Map.of(), headers);
+
             ResponseEntity<String> response = restTemplate.postForEntity(serviceUrl, requestEntity, String.class);
 
-            if (response.getStatusCode().is2xxSuccessful()) {
-                return response.getBody();
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                return objectMapper.readValue(response.getBody(), new TypeReference<Map<String, Object>>() {});
             }
-
             throw new RuntimeException("AI service returned status: " + response.getStatusCode());
         } catch (HttpStatusCodeException e) {
-            log.warn("AI retrain service returned error status: {}", e.getStatusCode());
-
-            if (e.getStatusCode().value() == 409) {
-                throw new IllegalStateException("Model is already retraining");
-            }
-
-            throw new RuntimeException("Failed to retrain AI model: " + e.getResponseBodyAsString(), e);
+            log.warn("AI service returned error status: {}", e.getStatusCode());
+            throw new RuntimeException("Failed to build retrain CSV: " + e.getResponseBodyAsString(), e);
         } catch (Exception e) {
-            log.error("Error calling AI retrain service", e);
-            throw new RuntimeException("Failed to retrain AI model: " + e.getMessage(), e);
-        }
-    }
-
-    @Override
-    public AIRetrainStatusResponse getRetrainStatus() {
-        try {
-            String serviceUrl = aiServiceUrl + "/api/ai/retrain/status";
-            log.info("Calling AI retrain status service: {}", serviceUrl);
-
-            ResponseEntity<String> response = restTemplate.getForEntity(serviceUrl, String.class);
-
-            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                return objectMapper.readValue(response.getBody(), AIRetrainStatusResponse.class);
-            }
-
-            throw new RuntimeException("AI service returned status: " + response.getStatusCode());
-        } catch (Exception e) {
-            log.error("Error getting AI retrain status", e);
-            throw new RuntimeException("Failed to get retrain status: " + e.getMessage(), e);
+            log.error("Error calling AI build-retrain-csv service", e);
+            throw new RuntimeException("Failed to build retrain CSV: " + e.getMessage(), e);
         }
     }
 }

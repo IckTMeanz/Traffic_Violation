@@ -5,6 +5,7 @@ import vn.icktmeanz.trafficViolation.dto.response.AIRetrainStatusResponse;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 public interface AIService {
     
@@ -32,9 +33,9 @@ public interface AIService {
     /**
      * Trigger retrain model on Python AI service.
      */
-    String retrainModel();
+    Map<String, Object> retrainModel();
     /**
      * Call Python AI service to retrain model.
      */
-    AIRetrainStatusResponse getRetrainStatus();
+    //AIRetrainStatusResponse getRetrainStatus();
 }

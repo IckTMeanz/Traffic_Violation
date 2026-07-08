@@ -51,15 +51,10 @@ public class AdminApiController {
     }
 
     @PostMapping("/retrain-model")
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public Map<String, String> retrainModel() {
-        aIService.retrainModel();
-        return Map.of("message", "Retrain model has been started");
+    @ResponseStatus(HttpStatus.OK)
+    public Map<String, Object> retrainModel() {
+        return aIService.retrainModel();
     }
 
-    @GetMapping("/retrain-model/status")
-    public AIRetrainStatusResponse getRetrainStatus() {
-        return aIService.getRetrainStatus();
-    }
 }
 

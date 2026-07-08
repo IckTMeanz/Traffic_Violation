@@ -503,7 +503,7 @@
 
                     <div class="d-flex gap-3">
                         <button type="button"
-                                onclick="fetchDetectedViolationCount(); loadRetrainStatus();"
+                                onclick="fetchDetectedViolationCount();"
                                 class="btn btn-secondary-custom h-44 rounded-xl-custom flex-grow-1">
                             <i class="fa-solid fa-rotate me-2"></i>
                             Refresh
@@ -531,8 +531,6 @@
     // ================================================================
     let usersData = [];           // Cache toàn bộ user từ API
     let pendingToggle = new Set(); // Các userId đang chờ API toggle
-    let isRetraining = false;
-    let retrainStatusInterval = null;
     // ================================================================
     // API CALLS
     // ================================================================
@@ -601,19 +599,6 @@
         return res.json();
     }
 
-    /**
-     * Lấy trạng thái retrain model
-     * GET /admin/api/retrain-model/status
-     */
-    async function fetchRetrainStatus() {
-        const res = await fetch('/admin/api/retrain-model/status');
-
-        if (!res.ok) {
-            throw new Error(`HTTP ${res.status}`);
-        }
-
-        return res.json();
-    }
 
     /**
      * Thay đổi trạng thái active/locked của user
@@ -825,7 +810,6 @@
             retrainModelSection.classList.remove('d-none');
             tabRetrainBtn.classList.add('active');
             fetchDetectedViolationCount();
-            loadRetrainStatus();
         }
     }
 
@@ -917,91 +901,50 @@
         form.classList.remove('was-validated');
         switchTab('users');
     }
-    function renderRetrainStatus(status) {
+    /**
+     * Xử lý khi bấm nút Retrain (tạo file CSV từ dữ liệu DB)
+     * POST /admin/api/retrain-model
+     */
+    async function handleRetrainModel() {
+        const btn = document.getElementById('retrain-model-btn');
         const statusBox = document.getElementById('retrain-status-box');
         const statusMessage = document.getElementById('retrain-status-message');
         const statusMeta = document.getElementById('retrain-status-meta');
-        const retrainBtn = document.getElementById('retrain-model-btn');
 
-        if (!statusBox || !statusMessage || !statusMeta || !retrainBtn) return;
+        const originalBtnHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-2"></i> Đang tạo CSV...`;
 
-        statusBox.classList.remove('d-none');
-        statusMessage.textContent = status.message || 'Idle';
-
-        const epoch = status.epoch ?? 0;
-        const bestF1 = status.best_f1 ?? null;
-
-        statusMeta.textContent = bestF1 !== null
-            ? `Epoch: ${epoch} | Best F1: ${bestF1}`
-            : `Epoch: ${epoch}`;
-
-        if (status.is_running) {
-            statusBox.className = 'alert alert-warning rounded-xl-custom mb-4';
-            retrainBtn.disabled = true;
-            retrainBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-2"></i> Đang retrain...`;
-            isRetraining = true;
-        } else {
-            statusBox.className = 'alert alert-primary rounded-xl-custom mb-4';
-            retrainBtn.disabled = false;
-            retrainBtn.innerHTML = `<i class="fa-solid fa-play me-2"></i> Retrain`;
-            isRetraining = false;
-        }
-    }
-
-    async function loadRetrainStatus() {
-        try {
-            const status = await fetchRetrainStatus();
-            renderRetrainStatus(status);
-
-            if (!status.is_running && retrainStatusInterval) {
-                clearInterval(retrainStatusInterval);
-                retrainStatusInterval = null;
-            }
-        } catch (err) {
-            console.error('Lỗi tải trạng thái retrain:', err);
-        }
-    }
-
-    function startRetrainStatusPolling() {
-        if (retrainStatusInterval) {
-            clearInterval(retrainStatusInterval);
-        }
-
-        loadRetrainStatus();
-        retrainStatusInterval = setInterval(loadRetrainStatus, 3000);
-    }
-
-    async function handleRetrainModel() {
-        if (isRetraining) return;
-
-        const retrainBtn = document.getElementById('retrain-model-btn');
-        if (!retrainBtn) return;
+        statusBox.classList.remove('d-none', 'alert-primary', 'alert-success', 'alert-danger');
+        statusBox.classList.add('alert-primary');
+        statusMessage.textContent = 'Đang lấy dữ liệu từ database và tạo file CSV...';
+        statusMeta.textContent = '';
 
         try {
-            isRetraining = true;
-            retrainBtn.disabled = true;
-            retrainBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-2"></i> Đang gửi yêu cầu...`;
+            const result = await apiRetrainModel();
 
-            await apiRetrainModel();
+            statusBox.classList.remove('alert-primary');
+            statusBox.classList.add('alert-success');
+            statusMessage.textContent = result.message || 'Đã tạo file CSV thành công.';
+            statusMeta.textContent = result.total_records != null
+                ? `Tổng số mẫu: ${Number(result.total_records).toLocaleString('vi-VN')}`
+                : '';
 
-            showToast('Đã gửi yêu cầu retrain model thành công.', 'success');
-            startRetrainStatusPolling();
+            showToast(result.message || 'Đã tạo file CSV retrain thành công', 'success');
         } catch (err) {
-            console.error('Lỗi retrain model:', err);
+            console.error('Lỗi khi gọi retrain-model:', err);
 
-            if (String(err.message || '').includes('409')) {
-                showToast('Model đang được retrain. Vui lòng chờ hoàn tất.', 'error');
-                startRetrainStatusPolling();
-            } else {
-                showToast('Retrain model thất bại. Vui lòng kiểm tra API Python.', 'error');
-            }
+            statusBox.classList.remove('alert-primary');
+            statusBox.classList.add('alert-danger');
+            statusMessage.textContent = 'Tạo file CSV thất bại. Vui lòng thử lại.';
+            statusMeta.textContent = '';
 
-            retrainBtn.disabled = false;
-            retrainBtn.innerHTML = `<i class="fa-solid fa-play me-2"></i> Retrain`;
-            isRetraining = false;
+            showToast('Tạo file CSV retrain thất bại.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalBtnHtml;
         }
     }
-
 
 
     // ================================================================
