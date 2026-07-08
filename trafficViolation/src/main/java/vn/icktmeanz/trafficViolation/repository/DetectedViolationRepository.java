@@ -1,20 +1,22 @@
 package vn.icktmeanz.trafficViolation.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.List;
+import java.util.Optional;
 
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
 import vn.icktmeanz.trafficViolation.dto.MonthlyStatisticProjection;
-import vn.icktmeanz.trafficViolation.dto.response.StatisticsMonthlyDTO;
 import vn.icktmeanz.trafficViolation.entity.DetectedViolation;
 import vn.icktmeanz.trafficViolation.entity.MediaFile;
-
-import java.util.List;
 
 public interface DetectedViolationRepository extends JpaRepository<DetectedViolation, Long> {
     List<DetectedViolation> findAllByMediaFile(MediaFile mediaFile);
 
     List<DetectedViolation> findAllByMediaFile_Id(Long mediaFileId);
+
+    Optional<DetectedViolation> findByCropUuid(String cropUuid);
 
     @Query(value = "SELECT unnest(dv.violation_types) AS violationName, COUNT(*) AS violationCount " +
             "FROM detected_violations dv " +

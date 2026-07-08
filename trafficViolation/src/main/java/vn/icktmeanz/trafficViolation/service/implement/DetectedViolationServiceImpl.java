@@ -1,15 +1,16 @@
 package vn.icktmeanz.trafficViolation.service.implement;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import vn.icktmeanz.trafficViolation.dto.response.DetectedObjectDTO;
 import vn.icktmeanz.trafficViolation.entity.DetectedViolation;
 import vn.icktmeanz.trafficViolation.entity.MediaFile;
 import vn.icktmeanz.trafficViolation.repository.DetectedViolationRepository;
 import vn.icktmeanz.trafficViolation.service.DetectedViolationService;
-
-import java.util.List;
 
 @Service
 public class DetectedViolationServiceImpl implements DetectedViolationService {
@@ -48,7 +49,15 @@ public class DetectedViolationServiceImpl implements DetectedViolationService {
         violation.setAuthorityCorrected(true);
         this.detectedViolationRepository.save(violation);
         return DetectedObjectDTO.builder().
-        objectId(violation.getCropUuid())
+                objectId(violation.getCropUuid())
                 .violationTypes(violationTypes).confidence(violation.getConfidence()).build();
+    }
+
+    @Override
+    @Transactional
+    public DetectedObjectDTO changeViolationTypes(String cropUuid, List<String> violationTypes) {
+        DetectedViolation violation = this.detectedViolationRepository.findByCropUuid(cropUuid)
+                .orElseThrow(() -> new RuntimeException("DetectedViolation not found by cropUuid"));
+        return changeViolationTypes(violation.getId(), violationTypes);
     }
 }

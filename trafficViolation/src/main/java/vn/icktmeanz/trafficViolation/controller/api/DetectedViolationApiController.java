@@ -1,16 +1,22 @@
 package vn.icktmeanz.trafficViolation.controller.api;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
 import vn.icktmeanz.trafficViolation.constant.ViolationType;
 import vn.icktmeanz.trafficViolation.dto.request.ChangeViolationTypeRequest;
 import vn.icktmeanz.trafficViolation.dto.response.DetectedObjectDTO;
 import vn.icktmeanz.trafficViolation.service.DetectedViolationService;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/violation")
@@ -29,7 +35,7 @@ public class DetectedViolationApiController {
     }
 
     @PostMapping("/change/{ObjectId}")
-    public DetectedObjectDTO changeViolationTypes(@PathVariable Long ObjectId, @RequestBody ChangeViolationTypeRequest request){
+    public DetectedObjectDTO changeViolationTypes(@PathVariable("ObjectId") String objectId, @RequestBody ChangeViolationTypeRequest request){
         ArrayList<String> violationTypes = new ArrayList<>();
         if (request.getNo_helmet()==1){
             violationTypes.add(ViolationType.NO_HELMET.name());
@@ -40,6 +46,6 @@ public class DetectedViolationApiController {
         if (request.getTriple_riding()==1){
             violationTypes.add(ViolationType.TRIPLE_RIDING.name());
         }
-        return this.detectedViolationService.changeViolationTypes(ObjectId, violationTypes);
+        return this.detectedViolationService.changeViolationTypes(objectId, violationTypes);
     }
 }
