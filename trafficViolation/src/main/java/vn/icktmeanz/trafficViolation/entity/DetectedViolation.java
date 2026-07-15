@@ -53,4 +53,7 @@ public class DetectedViolation {
 
     @Column(name = "crop_uuid", length = 36)
     private String cropUuid;
+
+    @Column(name = "be_trained", nullable = false)
+    private Boolean beTrained = false;
 }

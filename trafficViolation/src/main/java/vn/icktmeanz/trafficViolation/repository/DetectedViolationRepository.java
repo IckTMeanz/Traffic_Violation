@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -26,4 +27,12 @@ public interface DetectedViolationRepository extends JpaRepository<DetectedViola
             "  AND EXTRACT(YEAR FROM us.created_at) = :year " +
             "GROUP BY violationName", nativeQuery = true)
     List<MonthlyStatisticProjection> getViolationStatsByMonth(@Param("month") int month, @Param("year") int year);
+
+
+    @Query("SELECT COUNT(d) FROM DetectedViolation d WHERE d.isAuthorityCorrected = true AND d.beTrained = false")
+    long countDataAwaitingTrain();
+
+    @Modifying
+    @Query("UPDATE DetectedViolation d SET d.beTrained = true WHERE d.isAuthorityCorrected = true AND d.beTrained = false")
+    int updateBeTrainedStatus();
 }

@@ -13,4 +13,6 @@ public interface DetectedViolationService {
     DetectedObjectDTO changeViolationTypes(Long id, List<String> violationTypes);
 
     DetectedObjectDTO changeViolationTypes(String cropUuid, List<String> violationTypes);
+
+    int updateRetrainData();
 }

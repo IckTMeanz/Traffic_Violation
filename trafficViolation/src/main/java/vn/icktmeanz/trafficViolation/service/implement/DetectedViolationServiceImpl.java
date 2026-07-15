@@ -60,4 +60,10 @@ public class DetectedViolationServiceImpl implements DetectedViolationService {
                 .orElseThrow(() -> new RuntimeException("DetectedViolation not found by cropUuid"));
         return changeViolationTypes(violation.getId(), violationTypes);
     }
+
+    @Override
+    @Transactional()
+    public int updateRetrainData() {
+        return this.detectedViolationRepository.updateBeTrainedStatus();
+    }
 }

@@ -355,7 +355,7 @@
                 <li>
                     <button id="tab-retrain-btn" class="sidebar-menu-btn" onclick="switchTab('retrain_model')">
                         <i class="fa-solid fa-brain fa-fw"></i>
-                        <span class="menu-text">Retrain model</span>
+                        <span class="menu-text">Build data for retrain</span>
                     </button>
                 </li>
             </ul>
@@ -478,9 +478,9 @@
                              style="background-color: #EFF6FF; color: #2563EB; width: 56px; height: 56px; border: 1px solid #BFDBFE;">
                             <i class="fa-solid fa-brain fa-xl"></i>
                         </div>
-                        <h2 class="h4 fw-bold text-dark">Retrain model</h2>
+                        <h2 class="h4 fw-bold text-dark">Build csv for retrain model</h2>
                         <p class="text-secondary small mb-0">
-                            Kiểm tra số lượng mẫu trong bảng detected_violations và gửi yêu cầu huấn luyện lại model AI.
+                            Kiểm tra số lượng mẫu đạt yêu cầu trong bảng detected_violations và gửi yêu cầu huấn luyện lại model AI.
                         </p>
                     </div>
 
@@ -495,7 +495,7 @@
                     <div id="retrain-status-box" class="alert alert-primary rounded-xl-custom d-none mb-4">
                         <div class="fw-semibold mb-1">
                             <i class="fa-solid fa-circle-info me-2"></i>
-                            Retrain status
+                            Status
                         </div>
                         <div id="retrain-status-message" class="small">Idle</div>
                         <div id="retrain-status-meta" class="small text-secondary mt-1"></div>
@@ -514,7 +514,7 @@
                                 onclick="handleRetrainModel()"
                                 class="btn btn-primary-custom h-44 rounded-xl-custom flex-grow-1">
                             <i class="fa-solid fa-play me-2"></i>
-                            Retrain
+                            Build
                         </button>
                     </div>
 
@@ -552,6 +552,22 @@
             showToast('Không thể tải danh sách người dùng. Vui lòng thử lại.', 'error');
             renderErrorState();
         }
+    }
+
+
+    async function apiUpdateDataStatus() {
+        const res = await fetch('/admin/api/detected-violations/updateDataStatus', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status}`);
+        }
+
+        return res.json();
     }
 
     /**
@@ -922,7 +938,7 @@
 
         try {
             const result = await apiRetrainModel();
-
+            const updatedRecords = await apiUpdateDataStatus();
             statusBox.classList.remove('alert-primary');
             statusBox.classList.add('alert-success');
             statusMessage.textContent = result.message || 'Đã tạo file CSV thành công.';
@@ -931,6 +947,7 @@
                 : '';
 
             showToast(result.message || 'Đã tạo file CSV retrain thành công', 'success');
+            fetchDetectedViolationCount();
         } catch (err) {
             console.error('Lỗi khi gọi retrain-model:', err);
 

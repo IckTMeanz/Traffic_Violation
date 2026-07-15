@@ -11,6 +11,7 @@ import vn.icktmeanz.trafficViolation.dto.response.AIRetrainStatusResponse;
 import vn.icktmeanz.trafficViolation.entity.User;
 import vn.icktmeanz.trafficViolation.repository.DetectedViolationRepository;
 import vn.icktmeanz.trafficViolation.service.AIService;
+import vn.icktmeanz.trafficViolation.service.DetectedViolationService;
 import vn.icktmeanz.trafficViolation.service.UserService;
 
 import java.util.List;
@@ -22,12 +23,14 @@ public class AdminApiController {
     private final DetectedViolationRepository detectedViolationRepository;
     private UserService userService;
     private AIService aIService;
+    private DetectedViolationService detectedViolationService;
 
     @Autowired
-    public AdminApiController(UserService userService, DetectedViolationRepository detectedViolationRepository, AIService aIService){
+    public AdminApiController(UserService userService, DetectedViolationRepository detectedViolationRepository, AIService aIService, DetectedViolationService detectedViolationService){
         this.userService = userService;
         this.detectedViolationRepository = detectedViolationRepository;
         this.aIService = aIService;
+        this.detectedViolationService = detectedViolationService;
     }
 
     @GetMapping("/all")
@@ -47,7 +50,12 @@ public class AdminApiController {
 
     @GetMapping("/detected-violations/count")
     public Map<String, Long> countDetectedViolations() {
-        return Map.of("count", detectedViolationRepository.count());
+        return Map.of("count", detectedViolationRepository.countDataAwaitingTrain());
+    }
+
+    @PutMapping("/detected-violations/updateDataStatus")
+    public int updateDataStatus() {
+        return detectedViolationService.updateRetrainData();
     }
 
     @PostMapping("/retrain-model")

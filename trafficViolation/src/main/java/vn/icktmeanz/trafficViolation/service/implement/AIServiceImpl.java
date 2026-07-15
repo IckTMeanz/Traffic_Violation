@@ -23,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import vn.icktmeanz.trafficViolation.dto.response.AIProcessingResultDTO;
 import vn.icktmeanz.trafficViolation.dto.response.AIRetrainStatusResponse;
+import vn.icktmeanz.trafficViolation.repository.DetectedViolationRepository;
 import vn.icktmeanz.trafficViolation.service.AIService;
 
 @Service
@@ -32,6 +33,7 @@ public class AIServiceImpl implements AIService {
 
     private final ObjectMapper objectMapper;
     private final RestTemplate restTemplate;
+    private final DetectedViolationRepository violationRepository;
 
     @Value("${app.ai.service.url}")
     private String aiServiceUrl;
@@ -117,6 +119,13 @@ public class AIServiceImpl implements AIService {
     @Override
     public Map<String, Object> retrainModel() {
         try {
+            long countAwaiting = violationRepository.countDataAwaitingTrain();
+            if (countAwaiting == 0) {
+                return Map.of(
+                        "success", false,
+                        "message", "Không có dữ liệu vi phạm nào đã hiệu chỉnh cần chạy lại mô hình."
+                );
+            }
             String serviceUrl = aiServiceUrl + "/api/ai/retrain";
             log.info("Calling AI build-retrain-csv service: {}", serviceUrl);
 
