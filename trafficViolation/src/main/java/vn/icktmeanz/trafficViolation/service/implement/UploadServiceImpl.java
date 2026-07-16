@@ -304,6 +304,7 @@ public class UploadServiceImpl implements UploadService {
                     .confidence(detectedObject.getConfidence())
                     .frameNumber(detectedObject.getFrameNumber())
                     .isAuthorityCorrected(false)
+                    .beTrained(false)
                     .build();
 
             detectedViolationRepository.save(violation);
